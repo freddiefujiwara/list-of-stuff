@@ -89,7 +89,7 @@ $(function() {
     url: 'https://script.google.com/macros/s/AKfycbwUMhAHJDzp_mtR12fbHJlzNTptpSH78LNJAr9i9SXBdn_BUAwWJTtb1g/exec',
     dataType: 'jsonp'
   }).done((data) => {
-
+    data = data[Math.floor(Math.random() * data.length)];
     $('#port_photo_path').attr('src', 'https://room.r10s.jp/d/strg/ctrl/22/5835a77aaef28c009248b49b817968804c9e9603.03.9.22.3.png');
     data.reverse().forEach(function(item) {
       $("#row").append([

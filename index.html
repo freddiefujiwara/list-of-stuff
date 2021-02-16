@@ -93,7 +93,7 @@ $(function() {
     $('#port_photo_path').attr('src', 'https://room.r10s.jp/d/strg/ctrl/22/5835a77aaef28c009248b49b817968804c9e9603.03.9.22.3.png');
     data.reverse().forEach(function(item) {
       $("#row").append([
-        ' <div class="col-md-4">',
+        '<div class="col-md-4">',
         '<div class="card mb-4 box-shadow">',
         '<a style="text-decoration: none;color: #333;" href="',
         item.url,
@@ -124,7 +124,7 @@ $(function() {
       setTimeout(function() {
         const value = q;
         $("div.card").filter(function() {
-          const target = $(this).find('[button[type=button]][.card-text]');
+          const target = $(this).find('button[type=button]');
           $(this).toggle(target.text().toLowerCase().indexOf(value) > -1)
         });
         $("#filter").val(value);
@@ -134,11 +134,11 @@ $(function() {
       const value = $(this).val().toLowerCase();
       if (value) {
         $("div.card").filter(function() {
-          const target = $(this).find('.card-text');
+          const target = $(this).find('button[type=button]');
           $(this).toggle(target.text().toLowerCase().indexOf(value) > -1)
         });
-        window.history.replaceState(null, null, "?q=" + encodeURIComponent(value));
       }
+      window.history.replaceState(null, null, "?q=" + encodeURIComponent(value));
     }).prop("disabled", false);
   });
 });

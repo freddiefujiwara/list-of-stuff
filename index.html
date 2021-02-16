@@ -121,7 +121,7 @@ $(function() {
       setTimeout(function() {
         const value = q;
         $("div.card").filter(function() {
-          const target = $(this).find('.card-text');
+          const target = $(this).find('button[type=button]');
           $(this).toggle(target.text().toLowerCase().indexOf(value) > -1)
         });
         $("#filter").val(value);

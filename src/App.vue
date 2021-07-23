@@ -1,5 +1,9 @@
 <template>
-  <div class="col-md-4">
+  <div class="col-md-4"
+       contenteditable="true"
+       v-for="(item) in items"
+       :key=item.title
+       >
     <div class="card mb-4 box-shadow">
       <a style="text-decoration: none;color: #333;" href="{{ item.url }}" target="_blank">
         <p class="card-text">{{ item.title }}</p>

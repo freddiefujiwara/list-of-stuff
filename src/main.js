@@ -1,4 +1,6 @@
 import { createApp } from 'vue'
 import App from './App.vue'
 
-createApp(App).mount('#row')
+const app = createApp(App)
+app.mount('#row')
+app.config.devtools = true

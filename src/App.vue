@@ -27,6 +27,7 @@
 import axios from 'axios'
 import arrayShuffle from 'array-shuffle'
 const api = "<API>"
+let items;
 export default {
   name: 'App',
   data () {
@@ -34,14 +35,15 @@ export default {
       items : null
     }
   },
-  method {
+  method: {
     onClick(genre) {
       console.log(genre);
     }
   },
   async mounted () {
-    this.items =
+    items =
       arrayShuffle((await axios.get(api)).data)
+    this.items = items;
   }
 }
 </script>

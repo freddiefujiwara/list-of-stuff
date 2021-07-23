@@ -35,7 +35,7 @@ export default {
       items : null
     }
   },
-  method: {
+  methods: {
     onClick(genre) {
       console.log(genre)
       this.items = items.filter(item => item.genre === genre)

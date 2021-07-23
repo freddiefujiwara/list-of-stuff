@@ -1,6 +1,5 @@
 import { createApp } from 'vue'
 import App from './App.vue'
 
-const app = createApp(App)
-app.mount('#row')
-app.config.devtools = true
+createApp(App)
+  .mount('#main')

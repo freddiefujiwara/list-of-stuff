@@ -11,6 +11,7 @@
          :title  ="item.title"
          :unit   ="item.unit"
          :url    ="item.url"
+         @filter="filter"
          />
   </div>
 </template>

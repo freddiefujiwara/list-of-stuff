@@ -31,6 +31,11 @@ export default {
     title: String,
     unit: Number,
     url: String
+  },
+  methods: {
+    filter(genre) {
+      this.$emit('filter',genre)
+    }
   }
 }
 </script>

@@ -12,8 +12,11 @@
            <p class="card-text">{{ item.comment }}</p>
            <div class="d-flex justify-content-between align-items-center">
              <div class="btn-group">
-               <button type="button" class="btn btn-sm btn-outline-secondary" @click="onClick(item.genre)">
+               <button type="button" class="btn btn-sm btn-outline-secondary" @click="filter(item.genre)">
                  {{ item.genre }}
+               </button>
+               <button type="button" class="btn btn-sm btn-outline-secondary" @click="clear">
+                 Clear filter
                </button>
              </div>
              <small class="text-muted">{{ item.price }}円</small>
@@ -36,9 +39,11 @@ export default {
     }
   },
   methods: {
-    onClick(genre) {
-      console.log(genre)
+    filter(genre) {
       this.items = items.filter(item => item.genre === genre)
+    },
+    clear(){
+      this.items = items;
     }
   },
   async mounted () {

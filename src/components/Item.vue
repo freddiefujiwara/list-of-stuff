@@ -11,9 +11,6 @@
           <button type="button" class="btn btn-sm btn-outline-secondary" @click="filter(genre)">
             {{ genre }}
           </button>
-          <button type="button" class="btn btn-sm btn-outline-secondary" @click="clear">
-            Clear filter
-          </button>
         </div>
         <small class="text-muted">{{ price }}円</small>
       </div>

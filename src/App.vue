@@ -1,4 +1,7 @@
 <template>
+  <button type="button" class="btn btn-sm btn-outline-secondary" @click="clear">
+    Clear filter
+  </button>
   <div class="col-md-4"
        v-for="(item) in items"
        :key=item.title

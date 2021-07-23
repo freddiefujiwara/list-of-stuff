@@ -35,7 +35,7 @@
 <script>
 import axios from 'axios'
 import arrayShuffle from 'array-shuffle'
-import Item from './components/Item.vue'
+import Item from '@/components/Item.vue'
 const api = "<API>"
 let items;
 

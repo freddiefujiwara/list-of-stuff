@@ -37,7 +37,8 @@ export default {
   },
   method: {
     onClick(genre) {
-      console.log(genre);
+      console.log(genre)
+      this.items = items.filter(item => item.genre === genre)
     }
   },
   async mounted () {

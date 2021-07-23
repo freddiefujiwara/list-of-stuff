@@ -1,8 +1,8 @@
 <template>
   <div class="card mb-4 box-shadow">
-    <a style="text-decoration: none;color: #333;" v-bind:href="url" target="_blank">
+    <a style="text-decoration: none;color: #333;" :href="url" target="_blank">
       <p class="card-text">{{ title }}</p>
-      <img class="card-img-top" v-bind:src="image" v-bind:alt="title">
+      <img class="card-img-top" :src="image" :alt="title">
     </a>
     <div class="card-body">
       <p class="card-text">{{ comment }}</p>

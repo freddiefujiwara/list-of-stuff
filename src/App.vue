@@ -7,7 +7,7 @@
     <div class="card mb-4 box-shadow">
       <a style="text-decoration: none;color: #333;" v-bind:href="item.url" target="_blank">
         <p class="card-text">{{ item.title }}</p>
-        <img class="card-img-top" v-bind:src="item.image" alt="Card image cap">
+        <img class="card-img-top" v-bind:src="item.image" v-bind:alt="item.title">
       </a>
       <div class="card-body">
         <p class="card-text">{{ item.comment }}</p>

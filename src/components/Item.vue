@@ -12,7 +12,7 @@
             {{ genre }}
           </button>
         </div>
-        <small class="text-muted">{{ price }}円</small>
+        <small class="text-muted">{{ price.toLocaleString() }}円</small>
       </div>
     </div>
   </div>

@@ -23,7 +23,10 @@ export default {
   props: {
     comment: String,
     genre: String,
-    image: String,
+    image: {
+      type: String,
+      default: "https://tshop.r10s.jp/rukusu/cabinet/images/junbi.jpg"
+    },
     price: Number,
     title: String,
     unit: Number,

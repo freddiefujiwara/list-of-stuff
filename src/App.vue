@@ -7,10 +7,10 @@
       </a>
     </div>
   </section>
-  <button type="button" class="btn btn-sm btn-outline-secondary" @click="clear">
-    Clear filter
-  </button>
   <div class="album py-5 bg-light">
+    <button type="button" class="btn btn-sm btn-outline-secondary" @click="clear">
+      Clear filter
+    </button>
     <div class="container">
       <div class="row" id="row">
         <div class="col-md-4"

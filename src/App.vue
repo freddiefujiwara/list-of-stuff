@@ -12,7 +12,7 @@
            <p class="card-text">{{ item.comment }}</p>
            <div class="d-flex justify-content-between align-items-center">
              <div class="btn-group">
-               <button type="button" class="btn btn-sm btn-outline-secondary">
+               <button type="button" class="btn btn-sm btn-outline-secondary" @click="onClick(item.genre)">
                  {{ item.genre }}
                </button>
              </div>
@@ -32,6 +32,11 @@ export default {
   data () {
     return {
       items : null
+    }
+  },
+  method {
+    onClick(genre) {
+      console.log(genre);
     }
   },
   async mounted () {

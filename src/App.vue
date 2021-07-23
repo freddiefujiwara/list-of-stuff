@@ -1,6 +1,5 @@
 <template>
   <div class="col-md-4"
-       contenteditable="true"
        v-for="(item) in items"
        :key=item.title
        >

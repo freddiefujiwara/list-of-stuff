@@ -16,24 +16,34 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [12.x, 14.x, 16.x]
+        node-version: [18.x, 20.x, 22.x]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
-    - uses: actions/checkout@v2
-    - run : sed -i -e  's@<API>@${{ secrets.API }}@g' src/App.vue
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v2
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm'
-    - run: npm ci
-    - run: npm run build --if-present
-    - run: npm test
-    - name: "Deploy to gh-pages 🚀"
-      uses: JamesIves/github-pages-deploy-action@releases/v3
-      if: ${{  matrix.node-version == '16.x' }}
-      with:
-        GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
-        BRANCH: gh-pages
-        FOLDER: dist
+      - uses: actions/checkout@v4
+
+      - name: Inject API secret
+        run: sed -i -e 's@<API>@${{ secrets.API }}@g' src/App.vue
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
+
+      - name: Build
+        run: npm run build --if-present
+
+      - name: "Deploy to gh-pages 🚀"
+        uses: JamesIves/github-pages-deploy-action@releases/v3
+        if: ${{ matrix.node-version == '22.x' }}
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH: gh-pages
+          FOLDER: dist

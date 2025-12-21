@@ -1,50 +1,50 @@
 [![Node.js CI](https://github.com/freddiefujiwara/list-of-stuff/actions/workflows/node.js.yml/badge.svg)](https://github.com/freddiefujiwara/list-of-stuff/actions/workflows/node.js.yml)
 
-# [ミニマリストの持ち物一覧](https://freddiefujiwara.com/list-of-stuff/)
+# [A Minimalist's List of Stuff](https://freddiefujiwara.com/list-of-stuff/)
 
-ミニマリストである筆者の持ち物を一覧にしたウェブサイトです。
+This is a website that lists the belongings of a minimalist.
 
-## スクリーンショット
+## Screenshot
 
-![スクリーンショット](public/screenshot.png)
+![Screenshot](public/screenshot.png)
 
-[ライブデモはこちら](https://freddiefujiwara.com/list-of-stuff/)
+[Live Demo](https://freddiefujiwara.com/list-of-stuff/)
 
-## 主な機能
+## Features
 
-- **持ち物一覧**: 全ての持ち物を一覧で表示します。
-- **ジャンル別フィルタリング**: ジャンルを選択して、表示する持ち物を絞り込むことができます。
+- **Item List**: Displays a list of all items.
+- **Filter by Genre**: You can filter the items by selecting a genre.
 
-## 技術スタック
+## Tech Stack
 
 - [Vue.js 3](https://vuejs.org/)
 
-## 開発
+## Development
 
-### セットアップ
+### Setup
 
 ```
 npm install
 ```
 
-### 開発サーバーの起動
+### Run Development Server
 
 ```
 npm run serve
 ```
 
-### 本番用ビルド
+### Build for Production
 
 ```
 npm run build
 ```
 
-### Linterの実行
+### Run Linter
 
 ```
 npm run lint
 ```
 
-## 参考
+## Reference
 
 - [Configuration Reference](https://cli.vuejs.org/config/)

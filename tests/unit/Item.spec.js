@@ -1,5 +1,3 @@
-const assert = require('assert')
-const { test, describe, beforeEach } = require('node:test')
 const { filterByGenre, formatYen, shuffleItems } = require('../../src/utils/items')
 
 describe('item helpers', () => {
@@ -13,28 +11,27 @@ describe('item helpers', () => {
     ]
   })
 
-  test('filterByGenre narrows to matching genre', () => {
+  it('filterByGenre narrows to matching genre', () => {
     const filtered = filterByGenre(items, 'Gear')
-    assert.strictEqual(filtered.length, 2)
-    assert.ok(filtered.every((item) => item.genre === 'Gear'))
+    expect(filtered).toHaveLength(2)
+    expect(filtered.every((item) => item.genre === 'Gear')).toBe(true)
   })
 
-  test('filterByGenre returns all items when no genre given', () => {
+  it('filterByGenre returns all items when no genre given', () => {
     const filtered = filterByGenre(items, '')
-    assert.strictEqual(filtered.length, items.length)
+    expect(filtered).toHaveLength(items.length)
   })
 
-  test('formatYen formats numbers with separators and suffix', () => {
-    assert.strictEqual(formatYen(1340), '1,340円')
-    assert.strictEqual(formatYen(), '0円')
+  it('formatYen formats numbers with separators and suffix', () => {
+    expect(formatYen(1340)).toBe('1,340円')
+    expect(formatYen()).toBe('0円')
   })
 
-  test('shuffleItems keeps all items without mutating original', () => {
+  it('shuffleItems keeps all items without mutating original', () => {
     const original = [...items]
     const shuffled = shuffleItems(items)
-    assert.deepStrictEqual(items, original, 'should not mutate input')
-    assert.deepStrictEqual(
-      shuffled.map((item) => item.title).sort(),
+    expect(items).toEqual(original)
+    expect(shuffled.map((item) => item.title).sort()).toEqual(
       original.map((item) => item.title).sort()
     )
   })

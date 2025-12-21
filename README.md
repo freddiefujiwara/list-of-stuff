@@ -1,25 +1,50 @@
 [![Node.js CI](https://github.com/freddiefujiwara/list-of-stuff/actions/workflows/node.js.yml/badge.svg)](https://github.com/freddiefujiwara/list-of-stuff/actions/workflows/node.js.yml)
-# [list-of-stuff](https://freddiefujiwara.com/list-of-stuff/)
 
-## Project setup
+# [A Minimalist's List of Stuff](https://freddiefujiwara.com/list-of-stuff/)
+
+This is a website that lists the belongings of a minimalist.
+
+## Screenshot
+
+![Screenshot](public/screenshot.png)
+
+[Live Demo](https://freddiefujiwara.com/list-of-stuff/)
+
+## Features
+
+- **Item List**: Displays a list of all items.
+- **Filter by Genre**: You can filter the items by selecting a genre.
+
+## Tech Stack
+
+- [Vue.js 3](https://vuejs.org/)
+
+## Development
+
+### Setup
+
 ```
 npm install
 ```
 
-### Compiles and hot-reloads for development
+### Run Development Server
+
 ```
 npm run serve
 ```
 
-### Compiles and minifies for production
+### Build for Production
+
 ```
 npm run build
 ```
 
-### Lints and fixes files
+### Run Linter
+
 ```
 npm run lint
 ```
 
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+## Reference
+
+- [Configuration Reference](https://cli.vuejs.org/config/)

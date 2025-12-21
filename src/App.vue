@@ -64,7 +64,7 @@ const genres = computed(() => {
 })
 
 const filterByGenre = (genre) => {
-  activeGenre.value = genre
+  activeGenre.value = activeGenre.value === genre ? '' : genre
 }
 
 const clearFilter = () => {

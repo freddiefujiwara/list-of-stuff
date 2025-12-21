@@ -17,12 +17,8 @@ function formatYen(price) {
   return `${price.toLocaleString('ja-JP')}円`
 }
 
-export { shuffleItems, filterByGenre, formatYen }
-
-if (typeof module !== 'undefined') {
-  module.exports = {
-    shuffleItems,
-    filterByGenre,
-    formatYen,
-  }
+module.exports = {
+  shuffleItems,
+  filterByGenre,
+  formatYen,
 }

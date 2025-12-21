@@ -42,13 +42,15 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
 import Item from '@/components/Item.vue'
-import { shuffleItems } from '@/utils/items'
+import itemUtils from '@/utils/items'
 
 const api = '<API>'
 const allItems = ref([])
 const activeGenre = ref('')
 const loading = ref(true)
 const error = ref('')
+
+const { shuffleItems } = itemUtils
 
 const filteredItems = computed(() => {
   if (!activeGenre.value) return allItems.value

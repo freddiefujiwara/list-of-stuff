@@ -1,32 +1,22 @@
 <template>
   <main class="page">
     <header class="hero">
-      <p class="eyebrow">Minimal gear list</p>
-      <h1>使ってる持ち物ほぼほぼすべて</h1>
-      <p class="lead">
-        シンプルで使い切れるものだけを集めました。気になるジャンルをタップすると同じカテゴリで絞り込みます。
-      </p>
-      <div class="hero-actions">
-        <div class="chips">
-          <button
-            v-for="genre in genres"
-            :key="genre"
-            type="button"
-            class="button chip"
-            :class="{ active: activeGenre === genre }"
-            @click="filterByGenre(genre)"
-          >
-            {{ genre }}
-          </button>
-          <button
-            v-if="activeGenre"
-            type="button"
-            class="button ghost"
-            @click="clearFilter"
-          >
-            フィルターを解除 ({{ activeGenre }})
-          </button>
-        </div>
+      <h1>使ってる持ち物</h1>
+      <p class="lead">ジャンルを押すと絞り込み、解除で一覧に戻ります。</p>
+      <div class="chips">
+        <button
+          v-for="genre in genres"
+          :key="genre"
+          type="button"
+          class="chip"
+          :class="{ active: activeGenre === genre }"
+          @click="filterByGenre(genre)"
+        >
+          {{ genre }}
+        </button>
+        <button v-if="activeGenre" type="button" class="chip clear" @click="clearFilter">
+          解除 ({{ activeGenre }})
+        </button>
       </div>
     </header>
 
@@ -70,11 +60,7 @@ const filteredItems = computed(() => {
 })
 
 const genres = computed(() => {
-  const set = new Set()
-  allItems.value.forEach((item) => {
-    if (item?.genre) set.add(item.genre)
-  })
-  return Array.from(set)
+  return Array.from(new Set(allItems.value.map((item) => item.genre).filter(Boolean)))
 })
 
 const filterByGenre = (genre) => {
@@ -103,67 +89,29 @@ onMounted(async () => {
 :global(body) {
   margin: 0;
   font-family: 'Inter', 'Noto Sans JP', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: #f7f8fa;
   color: #0f172a;
-  background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 60%, #e2e8f0 100%);
 }
 
 .page {
-  max-width: 1100px;
+  max-width: 1080px;
   margin: 0 auto;
-  padding: 32px 16px 64px;
+  padding: 24px 12px 48px;
 }
 
 .hero {
   display: grid;
-  gap: 12px;
-  padding: 32px;
-  border-radius: 16px;
-  background: #ffffff;
-  box-shadow: 0 12px 40px rgba(15, 23, 42, 0.08);
-}
-
-.eyebrow {
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  font-size: 12px;
-  color: #64748b;
-  margin: 0;
+  gap: 10px;
 }
 
 h1 {
   margin: 0;
-  font-size: 28px;
-  letter-spacing: -0.02em;
+  font-size: 26px;
 }
 
 .lead {
   margin: 0;
   color: #475569;
-  line-height: 1.6;
-}
-
-.hero-actions {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-}
-
-.button {
-  border: none;
-  border-radius: 12px;
-  padding: 12px 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.button.ghost {
-  background: #e2e8f0;
-  color: #0f172a;
-}
-
-.button.ghost:hover {
-  background: #cbd5e1;
 }
 
 .chips {
@@ -172,25 +120,32 @@ h1 {
   gap: 8px;
 }
 
-.button.chip {
-  background: #e0f2fe;
-  color: #0ea5e9;
-  padding: 10px 14px;
+.chip {
+  border: none;
+  border-radius: 999px;
+  padding: 8px 12px;
+  background: #e2e8f0;
+  color: #0f172a;
+  cursor: pointer;
 }
 
-.button.chip.active {
+.chip.active {
   background: #0ea5e9;
   color: #f8fafc;
 }
 
+.chip.clear {
+  background: #cbd5e1;
+}
+
 .content {
-  margin-top: 24px;
+  margin-top: 20px;
 }
 
 .helper {
   text-align: center;
   color: #475569;
-  padding: 24px;
+  padding: 20px;
 }
 
 .helper.error {
@@ -199,7 +154,7 @@ h1 {
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 12px;
 }
 </style>

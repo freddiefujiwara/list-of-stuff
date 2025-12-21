@@ -5,7 +5,7 @@
     </a>
     <div class="card-body">
       <div class="meta">
-        <button type="button" class="chip" @click="emitFilter(genre)">
+        <button type="button" class="chip" @click="emitFilter">
           {{ genre }}
         </button>
         <span class="price">{{ price.toLocaleString() }}円</span>
@@ -17,6 +17,8 @@
 </template>
 
 <script setup>
+defineOptions({ name: 'GearItemCard' })
+
 const props = defineProps({
   comment: String,
   genre: String,
@@ -32,8 +34,8 @@ const props = defineProps({
 
 const emit = defineEmits(['filter'])
 
-const emitFilter = (genre) => {
-  emit('filter', genre)
+const emitFilter = () => {
+  emit('filter', props.genre)
 }
 </script>
 

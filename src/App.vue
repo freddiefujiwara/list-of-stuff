@@ -7,14 +7,26 @@
         シンプルで使い切れるものだけを集めました。気になるジャンルをタップすると同じカテゴリで絞り込みます。
       </p>
       <div class="hero-actions">
-        <button
-          v-if="activeGenre"
-          type="button"
-          class="button ghost"
-          @click="clearFilter"
-        >
-          フィルターを解除 ({{ activeGenre }})
-        </button>
+        <div class="chips">
+          <button
+            v-for="genre in genres"
+            :key="genre"
+            type="button"
+            class="button chip"
+            :class="{ active: activeGenre === genre }"
+            @click="filterByGenre(genre)"
+          >
+            {{ genre }}
+          </button>
+          <button
+            v-if="activeGenre"
+            type="button"
+            class="button ghost"
+            @click="clearFilter"
+          >
+            フィルターを解除 ({{ activeGenre }})
+          </button>
+        </div>
       </div>
     </header>
 
@@ -55,6 +67,14 @@ const { shuffleItems } = itemUtils
 const filteredItems = computed(() => {
   if (!activeGenre.value) return allItems.value
   return allItems.value.filter((item) => item.genre === activeGenre.value)
+})
+
+const genres = computed(() => {
+  const set = new Set()
+  allItems.value.forEach((item) => {
+    if (item?.genre) set.add(item.genre)
+  })
+  return Array.from(set)
 })
 
 const filterByGenre = (genre) => {
@@ -144,6 +164,23 @@ h1 {
 
 .button.ghost:hover {
   background: #cbd5e1;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.button.chip {
+  background: #e0f2fe;
+  color: #0ea5e9;
+  padding: 10px 14px;
+}
+
+.button.chip.active {
+  background: #0ea5e9;
+  color: #f8fafc;
 }
 
 .content {

@@ -1,8 +1,8 @@
 <template>
   <main class="page">
     <header class="hero">
-      <h1>使ってる持ち物</h1>
-      <p class="lead">ジャンルを押すと絞り込み、解除で一覧に戻ります。</p>
+      <h1>ミニマリストの持ち物一覧</h1>
+      <p class="lead">ジャンルを押すと絞り込み、再度押すと解除します。</p>
       <div class="chips">
         <button
           v-for="genre in genres"
@@ -13,9 +13,6 @@
           @click="filterByGenre(genre)"
         >
           {{ genre }}
-        </button>
-        <button v-if="activeGenre" type="button" class="chip clear" @click="clearFilter">
-          解除 ({{ activeGenre }})
         </button>
       </div>
     </header>
@@ -132,10 +129,6 @@ h1 {
 .chip.active {
   background: #0ea5e9;
   color: #f8fafc;
-}
-
-.chip.clear {
-  background: #cbd5e1;
 }
 
 .content {

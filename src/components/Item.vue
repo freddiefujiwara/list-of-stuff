@@ -1,7 +1,14 @@
 <template>
   <article class="card">
     <a :href="url" class="media" target="_blank" rel="noopener">
-      <img :src="image" :alt="title" loading="lazy" />
+      <img
+        :src="image || fallbackImage"
+        :alt="title"
+        loading="lazy"
+        decoding="async"
+        fetchpriority="low"
+        @error="handleImageError"
+      />
     </a>
     <div class="card-body">
       <div class="meta">
@@ -32,10 +39,19 @@ const props = defineProps({
   url: String,
 })
 
+const fallbackImage = 'https://tshop.r10s.jp/rukusu/cabinet/images/junbi.jpg'
 const emit = defineEmits(['filter'])
 
 const emitFilter = () => {
   emit('filter', props.genre)
+}
+
+const handleImageError = (event) => {
+  if (!event?.target) return
+  // prevent infinite loop if the fallback also fails
+  if (event.target.dataset.errored) return
+  event.target.dataset.errored = 'true'
+  event.target.src = fallbackImage
 }
 </script>
 

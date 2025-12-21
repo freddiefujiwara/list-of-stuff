@@ -1,41 +1,117 @@
 <template>
-  <div class="card mb-4 box-shadow">
-    <a style="text-decoration: none;color: #333;" :href="url" target="_blank">
-      <p class="card-text">{{ title }}</p>
-      <img class="card-img-top" :src="image" :alt="title">
+  <article class="card">
+    <a :href="url" class="media" target="_blank" rel="noopener">
+      <img :src="image" :alt="title" loading="lazy" />
     </a>
     <div class="card-body">
-      <p class="card-text">{{ comment }}</p>
-      <div class="d-flex justify-content-between align--center">
-        <div class="btn-group">
-          <button type="button" class="btn btn-sm btn-outline-secondary" @click="filter(genre)">
-            {{ genre }}
-          </button>
-        </div>
-        <small class="text-muted">{{ price.toLocaleString() }}円</small>
+      <div class="meta">
+        <button type="button" class="chip" @click="emitFilter(genre)">
+          {{ genre }}
+        </button>
+        <span class="price">{{ price.toLocaleString() }}円</span>
       </div>
+      <a :href="url" class="title" target="_blank" rel="noopener">{{ title }}</a>
+      <p class="comment">{{ comment }}</p>
     </div>
-  </div>
+  </article>
 </template>
-<script>
-export default {
-  name: 'Item',
-  props: {
-    comment: String,
-    genre: String,
-    image: {
-      type: String,
-      default: "https://tshop.r10s.jp/rukusu/cabinet/images/junbi.jpg"
-    },
-    price: Number,
-    title: String,
-    unit: Number,
-    url: String
+
+<script setup>
+const props = defineProps({
+  comment: String,
+  genre: String,
+  image: {
+    type: String,
+    default: 'https://tshop.r10s.jp/rukusu/cabinet/images/junbi.jpg',
   },
-  methods: {
-    filter(genre) {
-      this.$emit('filter',genre)
-    }
-  }
+  price: Number,
+  title: String,
+  unit: Number,
+  url: String,
+})
+
+const emit = defineEmits(['filter'])
+
+const emitFilter = (genre) => {
+  emit('filter', genre)
 }
 </script>
+
+<style scoped>
+.card {
+  background: #ffffff;
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+  overflow: hidden;
+  display: grid;
+  gap: 12px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 36px rgba(15, 23, 42, 0.12);
+}
+
+.media {
+  display: block;
+  background: #f8fafc;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+}
+
+.media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.card-body {
+  padding: 0 16px 16px;
+  display: grid;
+  gap: 8px;
+}
+
+.meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.chip {
+  border: none;
+  background: #e0f2fe;
+  color: #0ea5e9;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.chip:hover {
+  background: #bae6fd;
+}
+
+.price {
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #0f172a;
+  text-decoration: none;
+}
+
+.title:hover {
+  text-decoration: underline;
+}
+
+.comment {
+  margin: 0;
+  color: #475569;
+  line-height: 1.5;
+}
+</style>

@@ -16,16 +16,17 @@ describe('Item.vue', () => {
       }
     })
   })
-  it('renders props.comment when passed', () => {
+  it('renders provided content', () => {
     expect(wrapper.text()).toMatch("I like it")
-  })
-  it('renders props.genre when passed', () => {
     expect(wrapper.text()).toMatch("for Kitchen")
+    expect(wrapper.text()).toMatch("AGFBrandy")
+    expect(wrapper.text()).toMatch("1,340円")
   })
-  it('renders props.image when passed', () => {
-    expect(wrapper.html()).toMatch('<img class="card-img-top" src="https://tshop')
+  it('renders the provided image source', () => {
+    expect(wrapper.find('img').attributes('src'))
+      .toBe("https://tshop.r10s.jp/kenkocom/cabinet/248/4901111371248.jpg")
   })
-  it('renders blank props.imag', () => {
+  it('renders fallback image when none is provided', () => {
     wrapper = shallowMount(Item, {
       props: {
         comment: "I like it",
@@ -36,15 +37,9 @@ describe('Item.vue', () => {
         url: "https://example.com"
       }
     })
-    expect(wrapper.html()).toMatch('junbi.jpg')
-  })
-  it('renders props.title when passed', () => {
-    expect(wrapper.text()).toMatch("AGFBrandy")
-  })
-  it('renders props.price when passed', () => {
-    expect(wrapper.text()).toMatch("1,340")
+    expect(wrapper.find('img').attributes('src')).toMatch('junbi.jpg')
   })
   it('renders props.url when passed', () => {
-    expect(wrapper.html()).toMatch('href="https://example.com"')
+    expect(wrapper.find('a').attributes('href')).toBe('https://example.com')
   })
 })

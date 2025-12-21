@@ -5,9 +5,9 @@
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
-    "test:unit": "vue-cli-service test:unit",
+    "test:unit": "node --test tests/unit/*.spec.js",
     "lint": "vue-cli-service lint",
-    "test": "npx jest"
+    "test": "npm run test:unit"
   },
   "dependencies": {
     "array-shuffle": "^2.0.0",

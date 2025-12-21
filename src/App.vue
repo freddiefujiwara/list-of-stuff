@@ -41,9 +41,8 @@
 
 <script setup>
 import { computed, onMounted, ref } from 'vue'
-import axios from 'axios'
-import arrayShuffle from 'array-shuffle'
 import Item from '@/components/Item.vue'
+import { shuffleItems } from '@/utils/items'
 
 const api = '<API>'
 const allItems = ref([])
@@ -66,8 +65,9 @@ const clearFilter = () => {
 
 onMounted(async () => {
   try {
-    const response = await axios.get(api)
-    allItems.value = arrayShuffle(response.data)
+    const response = await fetch(api)
+    const data = await response.json()
+    allItems.value = shuffleItems(data)
   } catch (err) {
     error.value = 'データの取得に失敗しました。'
     console.error(err)

@@ -64,10 +64,6 @@ const filterByGenre = (genre) => {
   activeGenre.value = activeGenre.value === genre ? '' : genre
 }
 
-const clearFilter = () => {
-  activeGenre.value = ''
-}
-
 onMounted(async () => {
   try {
     const response = await fetch(api)

@@ -72,16 +72,18 @@ const handleImageError = (event) => {
 }
 
 .media {
-  display: block;
+  display: flex;
   background: #f8fafc;
   aspect-ratio: 4 / 3;
   overflow: hidden;
   padding: 12px;
+  align-items: center;
+  justify-content: center;
 }
 
 .media img {
-  width: 100%;
-  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
   object-fit: contain;
   display: block;
 }

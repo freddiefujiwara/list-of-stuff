@@ -47,7 +47,7 @@ const emitFilter = () => {
 }
 
 const handleImageError = (event) => {
-  if (!event?.target) return
+  if (!event || !event.target) return
   // prevent infinite loop if the fallback also fails
   if (event.target.dataset.errored) return
   event.target.dataset.errored = 'true'

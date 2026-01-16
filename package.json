@@ -5,21 +5,26 @@
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
-    "test:unit": "node --test tests/unit/*.spec.js",
     "lint": "vue-cli-service lint",
-    "test": "npm run test:unit"
+    "test": "vitest",
+    "coverage": "vitest run --coverage"
   },
   "dependencies": {
     "core-js": "^3.37.1",
     "vue": "^3.4.38"
   },
   "devDependencies": {
+    "@vitejs/plugin-vue": "^6.0.3",
+    "@vitest/coverage-v8": "^4.0.17",
     "@vue/cli-plugin-babel": "^5.0.8",
     "@vue/cli-plugin-eslint": "^5.0.8",
     "@vue/cli-service": "^5.0.8",
     "@vue/compiler-sfc": "^3.4.38",
+    "@vue/test-utils": "^2.4.6",
     "eslint": "^8.57.1",
-    "eslint-plugin-vue": "^9.27.0"
+    "eslint-plugin-vue": "^9.27.0",
+    "jsdom": "^27.4.0",
+    "vitest": "^4.0.17"
   },
   "eslintConfig": {
     "root": true,
@@ -30,8 +35,7 @@
       "plugin:vue/vue3-essential",
       "eslint:recommended"
     ],
-    "parserOptions": {
-    },
+    "parserOptions": {},
     "rules": {},
     "overrides": [
       {

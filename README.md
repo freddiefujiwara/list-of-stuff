@@ -1,50 +1,58 @@
+# ミニマリストの持ち物一覧 (A Minimalist's List of Stuff)
+
 [![Node.js CI](https://github.com/freddiefujiwara/list-of-stuff/actions/workflows/node.js.yml/badge.svg)](https://github.com/freddiefujiwara/list-of-stuff/actions/workflows/node.js.yml)
-
-# [A Minimalist's List of Stuff](https://freddiefujiwara.com/list-of-stuff/)
-
-This is a website that lists the belongings of a minimalist.
-
-## Screenshot
-
-![Screenshot](public/screenshot.png)
 
 [Live Demo](https://freddiefujiwara.com/list-of-stuff/)
 
+これは、ミニマリストの持ち物を一覧表示するウェブサイトです。
+
 ## Features
 
-- **Item List**: Displays a list of all items.
-- **Filter by Genre**: You can filter the items by selecting a genre.
+-   持ち物の一覧表示
+-   ジャンルによる絞り込み表示
 
 ## Tech Stack
 
-- [Vue.js 3](https://vuejs.org/)
+-   [Vue.js 3](https://vuejs.org/)
+-   [Vite](https://vitejs.dev/)
+-   [Vitest](https://vitest.dev/)
 
-## Development
+## Commands
 
 ### Setup
 
-```
+プロジェクトの依存関係をインストールします。
+
+```bash
 npm install
 ```
 
-### Run Development Server
+### Development
 
-```
+開発用のローカルサーバーを起動します。
+
+```bash
 npm run serve
 ```
 
-### Build for Production
+### Testing
 
+Vitest を使用してユニットテストを実行します。
+
+```bash
+npm test
 ```
+
+テストカバレッジのレポートを生成します。カバレッジは 100% である必要があります。
+
+```bash
+npm run coverage
+```
+
+### Build
+
+本番用にプロジェクトをビルドします。成果物は `dist` ディレクトリに出力されます。
+
+```bash
 npm run build
 ```
-
-### Run Linter
-
-```
-npm run lint
-```
-
-## Reference
-
-- [Configuration Reference](https://cli.vuejs.org/config/)

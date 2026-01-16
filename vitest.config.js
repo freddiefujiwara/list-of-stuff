@@ -1,8 +1,8 @@
-import { defineConfig } from 'vitest/config'
-import vue from '@vitejs/plugin-vue'
-import path from 'path'
+const { defineConfig } = require('vitest/config')
+const vue = require('@vitejs/plugin-vue')
+const path = require('path')
 
-export default defineConfig({
+module.exports = defineConfig({
   plugins: [vue()],
   test: {
     globals: true,

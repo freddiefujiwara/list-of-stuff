@@ -1,41 +1,73 @@
-const assert = require('assert')
-const { test, describe, beforeEach } = require('node:test')
-const { filterByGenre, formatYen, shuffleItems } = require('../../src/utils/items')
+import { mount } from '@vue/test-utils'
+import { describe, it, expect } from 'vitest'
+import Item from '../../src/components/Item.vue'
 
-describe('item helpers', () => {
-  let items
+describe('Item.vue', () => {
+  const props = {
+    comment: 'This is a comment',
+    genre: 'Gear',
+    image: 'https://example.com/image.jpg',
+    price: 12345,
+    title: 'Test Item',
+    url: 'https://example.com',
+  }
 
-  beforeEach(() => {
-    items = [
-      { title: 'A', genre: 'Gear', price: 1000 },
-      { title: 'B', genre: 'Food', price: 2500 },
-      { title: 'C', genre: 'Gear', price: 4200 },
-    ]
+  it('renders all props correctly', () => {
+    const wrapper = mount(Item, { props })
+    expect(wrapper.text()).toContain(props.title)
+    expect(wrapper.text()).toContain(props.comment)
+    expect(wrapper.text()).toContain(props.genre)
+    expect(wrapper.text()).toContain('12,345円')
+    expect(wrapper.find('a').attributes('href')).toBe(props.url)
+    expect(wrapper.find('img').attributes('src')).toBe(props.image)
   })
 
-  test('filterByGenre narrows to matching genre', () => {
-    const filtered = filterByGenre(items, 'Gear')
-    assert.strictEqual(filtered.length, 2)
-    assert.ok(filtered.every((item) => item.genre === 'Gear'))
+  it('uses the default image when no image prop is provided', () => {
+    const { image, ...propsWithoutImage } = props
+    const wrapper = mount(Item, { props: propsWithoutImage })
+    expect(wrapper.find('img').attributes('src')).toBe('https://tshop.r10s.jp/rukusu/cabinet/images/junbi.jpg')
   })
 
-  test('filterByGenre returns all items when no genre given', () => {
-    const filtered = filterByGenre(items, '')
-    assert.strictEqual(filtered.length, items.length)
+  it('uses the fallback image when the image prop is a falsy string', () => {
+    const wrapper = mount(Item, { props: { ...props, image: '' } })
+    expect(wrapper.find('img').attributes('src')).toBe('https://tshop.r10s.jp/rukusu/cabinet/images/junbi.jpg')
   })
 
-  test('formatYen formats numbers with separators and suffix', () => {
-    assert.strictEqual(formatYen(1340), '1,340円')
-    assert.strictEqual(formatYen(), '0円')
+  it('emits a "filter" event when the genre chip is clicked', async () => {
+    const wrapper = mount(Item, { props })
+    await wrapper.find('.chip').trigger('click')
+    expect(wrapper.emitted('filter')).toBeTruthy()
+    expect(wrapper.emitted('filter')[0]).toEqual([props.genre])
   })
 
-  test('shuffleItems keeps all items without mutating original', () => {
-    const original = [...items]
-    const shuffled = shuffleItems(items)
-    assert.deepStrictEqual(items, original, 'should not mutate input')
-    assert.deepStrictEqual(
-      shuffled.map((item) => item.title).sort(),
-      original.map((item) => item.title).sort()
-    )
+  it('uses a fallback image when the primary image fails to load', async () => {
+    const wrapper = mount(Item, { props })
+    await wrapper.find('img').trigger('error')
+    expect(wrapper.find('img').attributes('src')).toBe('https://tshop.r10s.jp/rukusu/cabinet/images/junbi.jpg')
+  })
+
+  it('does not change the src if the image fails to load and the event has no target', async () => {
+    const wrapper = mount(Item, { props })
+    // directly calling the method on the vm is a way to test this
+    wrapper.vm.handleImageError({ target: null })
+    expect(wrapper.find('img').attributes('src')).toBe(props.image)
+  })
+
+  it('does not change the src if the image fails to load and the event is null', async () => {
+    const wrapper = mount(Item, { props })
+    // directly calling the method on the vm is a way to test this
+    wrapper.vm.handleImageError(null)
+    expect(wrapper.find('img').attributes('src')).toBe(props.image)
+  })
+
+  it('does not change the src if the fallback image has already failed', async () => {
+    const wrapper = mount(Item, { props })
+    const img = wrapper.find('img')
+    await img.trigger('error')
+    expect(img.attributes('src')).toBe('https://tshop.r10s.jp/rukusu/cabinet/images/junbi.jpg')
+    // Trigger error again
+    await img.trigger('error')
+    // Should not change the src
+    expect(img.attributes('src')).toBe('https://tshop.r10s.jp/rukusu/cabinet/images/junbi.jpg')
   })
 })

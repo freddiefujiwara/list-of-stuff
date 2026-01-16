@@ -1,15 +1,15 @@
-# ミニマリストの持ち物一覧 (A Minimalist's List of Stuff)
+# A Minimalist's List of Stuff
 
 [![Node.js CI](https://github.com/freddiefujiwara/list-of-stuff/actions/workflows/node.js.yml/badge.svg)](https://github.com/freddiefujiwara/list-of-stuff/actions/workflows/node.js.yml)
 
 [Live Demo](https://freddiefujiwara.com/list-of-stuff/)
 
-これは、ミニマリストの持ち物を一覧表示するウェブサイトです。
+This is a simple website that shows a list of a minimalist's belongings.
 
 ## Features
 
--   持ち物の一覧表示
--   ジャンルによる絞り込み表示
+-   See a list of all items.
+-   Filter items by genre.
 
 ## Tech Stack
 
@@ -21,7 +21,7 @@
 
 ### Setup
 
-プロジェクトの依存関係をインストールします。
+Installs the project's dependencies.
 
 ```bash
 npm install
@@ -29,7 +29,7 @@ npm install
 
 ### Development
 
-開発用のローカルサーバーを起動します。
+Starts the local development server.
 
 ```bash
 npm run serve
@@ -37,13 +37,13 @@ npm run serve
 
 ### Testing
 
-Vitest を使用してユニットテストを実行します。
+Runs the unit tests using Vitest.
 
 ```bash
 npm test
 ```
 
-テストカバレッジのレポートを生成します。カバレッジは 100% である必要があります。
+Generates a test coverage report. 100% coverage is required.
 
 ```bash
 npm run coverage
@@ -51,7 +51,7 @@ npm run coverage
 
 ### Build
 
-本番用にプロジェクトをビルドします。成果物は `dist` ディレクトリに出力されます。
+Builds the project for production. The output files will be in the `dist` directory.
 
 ```bash
 npm run build

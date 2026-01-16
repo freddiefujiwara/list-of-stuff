@@ -1,4 +1,4 @@
-function shuffleItems(list) {
+export function shuffleItems(list) {
   const copy = [...list]
   for (let i = copy.length - 1; i > 0; i -= 1) {
     const j = Math.floor(Math.random() * (i + 1))
@@ -7,18 +7,12 @@ function shuffleItems(list) {
   return copy
 }
 
-function filterByGenre(items, genre) {
+export function filterByGenre(items, genre) {
   if (!genre) return items
   return items.filter((item) => item.genre === genre)
 }
 
-function formatYen(price) {
+export function formatYen(price) {
   if (typeof price !== 'number' || Number.isNaN(price)) return '0円'
   return `${price.toLocaleString('ja-JP')}円`
-}
-
-module.exports = {
-  shuffleItems,
-  filterByGenre,
-  formatYen,
 }

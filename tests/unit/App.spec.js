@@ -2,17 +2,14 @@ import { mount, flushPromises } from '@vue/test-utils'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import App from '../../src/App.vue'
 
-// Mock the item utils, creating the spy inside the factory to avoid hoisting issues
+// Mock the item utils with named exports
 vi.mock('@/utils/items', () => ({
-  default: {
-    shuffleItems: vi.fn((items) => items),
-  },
+  shuffleItems: vi.fn((items) => items),
 }))
 
 describe('App.vue', async () => {
   // Asynchronously import the mocked module to get a handle on the spy
-  const itemUtils = (await import('@/utils/items')).default
-  const mockShuffleItems = itemUtils.shuffleItems
+  const { shuffleItems: mockShuffleItems } = await import('@/utils/items')
 
   const mockItems = [
     { title: 'A', genre: 'Gear', price: 1000 },

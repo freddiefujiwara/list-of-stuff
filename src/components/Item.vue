@@ -82,6 +82,7 @@ const handleImageError = (event) => {
 }
 
 .media img {
+  width: 100%;
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;

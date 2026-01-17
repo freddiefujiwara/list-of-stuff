@@ -88,9 +88,8 @@ const handleImageError = (event) => {
 
 .media img {
   width: 100%;
-  height: auto;
-  max-height: 40cqh;
-  max-width: 99cqh;
+  height: 100%;
+  object-fit: cover;       /* 画像を枠にフィット */
   display: block;
 }
 

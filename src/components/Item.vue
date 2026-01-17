@@ -68,6 +68,7 @@ const handleImageError = (event) => {
   overflow: hidden;
   display: grid;
   gap: 12px;
+  container-type: size;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -86,6 +87,7 @@ const handleImageError = (event) => {
 .media img {
   width: 100%;
   height: auto;
+  max-height: 40cqh;
   display: block;
 }
 

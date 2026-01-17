@@ -2,7 +2,7 @@
   <article class="card">
     <a :href="url" class="media" target="_blank" rel="noopener">
       <img
-        :src="image || fallbackImage"
+        :src="resolvedImage"
         :alt="title"
         loading="lazy"
         decoding="async"
@@ -24,6 +24,7 @@
 </template>
 
 <script setup>
+import { computed } from 'vue'
 defineOptions({ name: 'GearItemCard' })
 
 const props = defineProps({
@@ -40,6 +41,10 @@ const props = defineProps({
 })
 
 const fallbackImage = 'https://tshop.r10s.jp/rukusu/cabinet/images/junbi.jpg'
+const resolvedImage = computed(() => {
+  const candidate = typeof props.image === 'string' ? props.image.trim() : ''
+  return candidate ? candidate : fallbackImage
+})
 const emit = defineEmits(['filter'])
 
 const emitFilter = () => {

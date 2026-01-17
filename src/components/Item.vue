@@ -1,16 +1,14 @@
 <template>
   <article class="card">
     <a :href="url" class="media" target="_blank" rel="noopener">
-      <span class="media-inner">
-        <img
-          :src="resolvedImage"
-          :alt="title"
-          loading="lazy"
-          decoding="async"
-          fetchpriority="low"
-          @error="handleImageError"
-        />
-      </span>
+      <img
+        :src="resolvedImage"
+        :alt="title"
+        loading="lazy"
+        decoding="async"
+        fetchpriority="low"
+        @error="handleImageError"
+      />
     </a>
     <div class="card-body">
       <div class="meta">
@@ -81,31 +79,13 @@ const handleImageError = (event) => {
 .media {
   display: block;
   background: #f8fafc;
-  aspect-ratio: 4 / 3;
-  overflow: hidden;
   width: 100%;
   box-sizing: border-box;
-  min-height: 0;
-}
-
-.media-inner {
-  width: 100%;
-  height: 100%;
-  padding: 12px;
-  box-sizing: border-box;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .media img {
-  min-width: 0;
-  min-height: 0;
-  width: auto;
-  max-width: 100%;
+  width: 100%;
   height: auto;
-  max-height: 100%;
-  object-fit: contain;
   display: block;
 }
 

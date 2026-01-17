@@ -69,6 +69,8 @@ const handleImageError = (event) => {
   display: grid;
   gap: 12px;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+  grid-template-rows: auto 1fr;
+  height: 100%;
 }
 
 .card:hover {
@@ -78,12 +80,13 @@ const handleImageError = (event) => {
 
 .media {
   aspect-ratio: 4 / 3;
+  overflow: hidden;
 }
 
 .media img {
   width: 100%;
   height: 100%;
-  object-fit: cover;       /* 画像を枠にフィット */
+  object-fit: cover; 
   display: block;
 }
 

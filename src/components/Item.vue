@@ -86,10 +86,12 @@ const handleImageError = (event) => {
   justify-content: center;
   width: 100%;
   box-sizing: border-box;
+  min-height: 0;
 }
 
 .media img {
   min-width: 0;
+  min-height: 0;
   width: 100%;
   max-width: 100%;
   height: 100%;

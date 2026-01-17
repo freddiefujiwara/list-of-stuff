@@ -84,13 +84,15 @@ const handleImageError = (event) => {
   padding: 12px;
   align-items: center;
   justify-content: center;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .media img {
   min-width: 0;
-  width: auto;
+  width: 100%;
   max-width: 100%;
-  height: auto;
+  height: 100%;
   max-height: 100%;
   object-fit: contain;
   display: block;

@@ -80,8 +80,11 @@ const handleImageError = (event) => {
 .media {
   display: block;
   background: #f8fafc;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
   width: 100%;
   box-sizing: border-box;
+  min-height: 0;
 }
 
 .media img {

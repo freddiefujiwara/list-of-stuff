@@ -87,7 +87,7 @@ const handleImageError = (event) => {
 }
 
 .media img {
-  width: auto;
+  width: 100%;
   height: auto;
   max-height: 40cqh;
   max-width: 99cqh;

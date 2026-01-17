@@ -1,14 +1,16 @@
 <template>
   <article class="card">
     <a :href="url" class="media" target="_blank" rel="noopener">
-      <img
-        :src="image || fallbackImage"
-        :alt="title"
-        loading="lazy"
-        decoding="async"
-        fetchpriority="low"
-        @error="handleImageError"
-      />
+      <span class="media-inner">
+        <img
+          :src="resolvedImage"
+          :alt="title"
+          loading="lazy"
+          decoding="async"
+          fetchpriority="low"
+          @error="handleImageError"
+        />
+      </span>
     </a>
     <div class="card-body">
       <div class="meta">
@@ -24,6 +26,7 @@
 </template>
 
 <script setup>
+import { computed } from 'vue'
 defineOptions({ name: 'GearItemCard' })
 
 const props = defineProps({
@@ -40,6 +43,10 @@ const props = defineProps({
 })
 
 const fallbackImage = 'https://tshop.r10s.jp/rukusu/cabinet/images/junbi.jpg'
+const resolvedImage = computed(() => {
+  const candidate = typeof props.image === 'string' ? props.image.trim() : ''
+  return candidate ? candidate : fallbackImage
+})
 const emit = defineEmits(['filter'])
 
 const emitFilter = () => {
@@ -72,19 +79,31 @@ const handleImageError = (event) => {
 }
 
 .media {
-  display: flex;
+  display: block;
   background: #f8fafc;
   aspect-ratio: 4 / 3;
   overflow: hidden;
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 0;
+}
+
+.media-inner {
+  width: 100%;
+  height: 100%;
   padding: 12px;
+  box-sizing: border-box;
+  display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .media img {
   min-width: 0;
-  width: 100%;
+  min-height: 0;
+  width: auto;
   max-width: 100%;
+  height: auto;
   max-height: 100%;
   object-fit: contain;
   display: block;

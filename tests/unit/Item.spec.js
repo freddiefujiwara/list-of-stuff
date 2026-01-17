@@ -33,6 +33,16 @@ describe('Item.vue', () => {
     expect(wrapper.find('img').attributes('src')).toBe('https://tshop.r10s.jp/rukusu/cabinet/images/junbi.jpg')
   })
 
+  it('uses the fallback image when the image prop is whitespace', () => {
+    const wrapper = mount(Item, { props: { ...props, image: '   ' } })
+    expect(wrapper.find('img').attributes('src')).toBe('https://tshop.r10s.jp/rukusu/cabinet/images/junbi.jpg')
+  })
+
+  it('uses the fallback image when the image prop is not a string', () => {
+    const wrapper = mount(Item, { props: { ...props, image: null } })
+    expect(wrapper.find('img').attributes('src')).toBe('https://tshop.r10s.jp/rukusu/cabinet/images/junbi.jpg')
+  })
+
   it('emits a "filter" event when the genre chip is clicked', async () => {
     const wrapper = mount(Item, { props })
     await wrapper.find('.chip').trigger('click')

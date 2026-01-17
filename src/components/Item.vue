@@ -77,27 +77,28 @@ const handleImageError = (event) => {
 }
 
 .media {
-  display: flex;
+  display: block;
   background: #f8fafc;
   aspect-ratio: 4 / 3;
   overflow: hidden;
   padding: 12px;
-  align-items: center;
-  justify-content: center;
   width: 100%;
   box-sizing: border-box;
   min-height: 0;
+  position: relative;
 }
 
 .media img {
   min-width: 0;
   min-height: 0;
-  width: 100%;
-  max-width: 100%;
-  height: 100%;
-  max-height: 100%;
+  width: calc(100% - 24px);
+  max-width: calc(100% - 24px);
+  height: calc(100% - 24px);
+  max-height: calc(100% - 24px);
   object-fit: contain;
   display: block;
+  position: absolute;
+  inset: 12px;
 }
 
 .card-body {

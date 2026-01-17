@@ -86,12 +86,13 @@ const handleImageError = (event) => {
   width: 100%;
   box-sizing: border-box;
   min-height: 0;
-  position: relative;
 }
 
 .media-inner {
-  position: absolute;
-  inset: 12px;
+  width: 100%;
+  height: 100%;
+  padding: 12px;
+  box-sizing: border-box;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -100,9 +101,9 @@ const handleImageError = (event) => {
 .media img {
   min-width: 0;
   min-height: 0;
-  width: 100%;
+  width: auto;
   max-width: 100%;
-  height: 100%;
+  height: auto;
   max-height: 100%;
   object-fit: contain;
   display: block;

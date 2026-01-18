@@ -86,12 +86,12 @@ const handleImageError = (event) => {
 }
 
 .media img {
-  width: 160%;
+  width: 170%;
   height: 100%;
   object-fit: contain;
   position: absolute;
   top: 0;
-  right: -25%;
+  right: -15%;
 }
 
 .card-body {

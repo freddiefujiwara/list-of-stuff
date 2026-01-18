@@ -81,13 +81,17 @@ const handleImageError = (event) => {
 .media {
   aspect-ratio: 4 / 3;
   overflow: hidden;
+  background-color: #fff;
+  display: flex;
+  justify-content: flex-end; 
+  align-items: center;
 }
 
 .media img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover; 
-  object-position: right center; 
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  object-position: right center;
   display: block;
 }
 

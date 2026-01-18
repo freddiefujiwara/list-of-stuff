@@ -82,17 +82,16 @@ const handleImageError = (event) => {
   aspect-ratio: 4 / 3;
   overflow: hidden;
   background-color: #fff;
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
+  position: relative;
 }
 
 .media img {
-  max-width: 100%;
-  max-height: 100%;
+  width: 160%;
+  height: 100%;
   object-fit: contain;
-  object-position: right center;
-  display: block;
+  position: absolute;
+  top: 0;
+  right: -25%;
 }
 
 .card-body {

@@ -79,20 +79,21 @@ const handleImageError = (event) => {
 }
 
 .media {
-  aspect-ratio: 4 / 3;
+  aspect-ratio: 1 / 1; 
   overflow: hidden;
   background-color: #fff;
   display: flex;
-  justify-content: flex-end; 
   align-items: center;
+  justify-content: center;
 }
 
 .media img {
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
-  object-position: right center;
+  width: 100%;
+  height: 100%;
+  object-fit: contain; 
+  object-position: 30% center; 
   display: block;
+  padding: 8px;
 }
 
 .card-body {

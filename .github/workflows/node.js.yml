@@ -22,9 +22,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Inject API secret
-        run: sed -i -e 's@<API>@${{ secrets.API }}@g' src/constants/app.js
-
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
@@ -36,6 +33,9 @@ jobs:
 
       - name: Run tests
         run: npm test
+
+      - name: Inject API secret
+        run: sed -i -e 's@<API>@${{ secrets.API }}@g' src/constants/app.js
 
       - name: Build
         run: npm run build --if-present

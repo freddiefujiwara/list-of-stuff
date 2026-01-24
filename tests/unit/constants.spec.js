@@ -2,7 +2,9 @@ import { describe, it, expect } from 'vitest'
 import { API_URL, FALLBACK_IMAGE_URL } from '../../src/constants/app'
 
 describe('app constants', () => {
-  it('exposes the default API URL when env is not set', () => {
+  const apiTest = process.env.VITE_ITEMS_API ? it.skip : it
+
+  apiTest('exposes the default API URL when env is not set', () => {
     expect(API_URL).toBe('<API>')
   })
 

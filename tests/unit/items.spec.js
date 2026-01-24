@@ -14,12 +14,14 @@ describe('item helpers', () => {
 
   it('filterByGenre narrows to matching genre', () => {
     const filtered = filterByGenre(items, 'Gear')
+
     expect(filtered.length).toBe(2)
     expect(filtered.every((item) => item.genre === 'Gear')).toBe(true)
   })
 
   it('filterByGenre returns all items when no genre given', () => {
     const filtered = filterByGenre(items, '')
+
     expect(filtered.length).toBe(items.length)
   })
 
@@ -30,7 +32,9 @@ describe('item helpers', () => {
 
   it('shuffleItems keeps all items without mutating original', () => {
     const original = [...items]
+
     const shuffled = shuffleItems(items)
+
     expect(items).toEqual(original)
     expect(shuffled.map((item) => item.title).sort()).toEqual(
       original.map((item) => item.title).sort()

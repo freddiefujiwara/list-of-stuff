@@ -23,3 +23,7 @@ serve.log
 *.njsproj
 *.sln
 *.sw?
+.agents/
+.codex/
+.gemini/
+.github/skills/

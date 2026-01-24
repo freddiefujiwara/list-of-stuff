@@ -23,7 +23,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Inject API secret
-        run: sed -i -e 's@<API>@${{ secrets.API }}@g' src/App.vue
+        run: sed -i -e 's@<API>@${{ secrets.API }}@g' src/constants/app.js
 
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4

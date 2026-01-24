@@ -10,7 +10,7 @@
           type="button"
           class="chip"
           :class="{ active: activeGenre === genre }"
-          @click="filterByGenre(genre)"
+          @click="toggleGenre(genre)"
         >
           {{ genre }}
         </button>
@@ -31,7 +31,7 @@
           :title="item.title"
           :unit="item.unit"
           :url="item.url"
-          @filter="filterByGenre"
+          @filter="toggleGenre"
         />
       </div>
     </section>
@@ -39,41 +39,11 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from 'vue'
 import Item from '@/components/Item.vue'
-import { shuffleItems } from '@/utils/items'
+import { API_URL } from '@/constants/app'
+import { useItems } from '@/composables/useItems'
 
-const api = '<API>'
-const allItems = ref([])
-const activeGenre = ref('')
-const loading = ref(true)
-const error = ref('')
-
-const filteredItems = computed(() => {
-  if (!activeGenre.value) return allItems.value
-  return allItems.value.filter((item) => item.genre === activeGenre.value)
-})
-
-const genres = computed(() => {
-  return Array.from(new Set(allItems.value.map((item) => item.genre).filter(Boolean)))
-})
-
-const filterByGenre = (genre) => {
-  activeGenre.value = activeGenre.value === genre ? '' : genre
-}
-
-onMounted(async () => {
-  try {
-    const response = await fetch(api)
-    const data = await response.json()
-    allItems.value = shuffleItems(data)
-  } catch (err) {
-    error.value = 'データの取得に失敗しました。'
-    console.error(err)
-  } finally {
-    loading.value = false
-  }
-})
+const { activeGenre, error, filteredItems, genres, loading, toggleGenre } = useItems(API_URL)
 </script>
 
 <style scoped>

@@ -15,7 +15,7 @@
         <button type="button" class="chip" @click="emitFilter">
           {{ genre }}
         </button>
-        <span class="price">{{ price.toLocaleString() }}円</span>
+        <span class="price">{{ priceLabel }}</span>
       </div>
       <a :href="url" class="title" target="_blank" rel="noopener">{{ title }}</a>
       <p class="comment">{{ comment }}</p>
@@ -25,6 +25,8 @@
 
 <script setup>
 import { computed } from 'vue'
+import { FALLBACK_IMAGE_URL } from '@/constants/app'
+import { formatYen } from '@/utils/items'
 defineOptions({ name: 'GearItemCard' })
 
 const props = defineProps({
@@ -32,19 +34,28 @@ const props = defineProps({
   genre: String,
   image: {
     type: String,
-    default: 'https://tshop.r10s.jp/rukusu/cabinet/images/junbi.jpg',
+    default: FALLBACK_IMAGE_URL,
   },
-  price: Number,
-  title: String,
+  price: {
+    type: Number,
+    default: 0,
+  },
+  title: {
+    type: String,
+    default: '',
+  },
   unit: Number,
-  url: String,
+  url: {
+    type: String,
+    default: '',
+  },
 })
 
-const fallbackImage = 'https://tshop.r10s.jp/rukusu/cabinet/images/junbi.jpg'
 const resolvedImage = computed(() => {
   const candidate = typeof props.image === 'string' ? props.image.trim() : ''
-  return candidate ? candidate : fallbackImage
+  return candidate ? candidate : FALLBACK_IMAGE_URL
 })
+const priceLabel = computed(() => formatYen(props.price))
 const emit = defineEmits(['filter'])
 
 const emitFilter = () => {
@@ -56,7 +67,7 @@ const handleImageError = (event) => {
   // prevent infinite loop if the fallback also fails
   if (event.target.dataset.errored) return
   event.target.dataset.errored = 'true'
-  event.target.src = fallbackImage
+  event.target.src = FALLBACK_IMAGE_URL
 }
 </script>
 

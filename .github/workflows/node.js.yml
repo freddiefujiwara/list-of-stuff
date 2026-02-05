@@ -40,6 +40,13 @@ jobs:
       - name: Build
         run: npm run build --if-present
 
+      - name: Generate OGP Image from GAS JSON
+        run: |
+          # URL-encoded title: ミニマリストの持ち物リスト -> %E3%83%9F%E3%83%8B%E3%83%9E%E3%83%AA%E3%82%B9%E3%83%88%E3%81%AE%E6%8C%81%E3%81%A1%E7%89%A9%E3%83%AA%E3%82%B9%E3%83%88
+          JSON_RESPONSE=$(curl -L -s "https://script.google.com/macros/s/AKfycbzbMAKxkzHlwN8SY7ygJA34xYESMNNdkGNt8vv1XMcZSksgHsUwOxCCdP-wgg6fv7M/exec?t=%E3%83%9F%E3%83%8B%E3%83%9E%E3%83%AA%E3%82%B9%E3%83%88%E3%81%AE%E6%8C%81%E3%81%A1%E7%89%A9%E3%83%AA%E3%82%B9%E3%83%88")
+          echo $JSON_RESPONSE | jq -r '.png' | base64 -d > ./dist/ogp.png
+          ls -lh ./dist/ogp.png
+
       - name: "Deploy to gh-pages 🚀"
         uses: JamesIves/github-pages-deploy-action@releases/v3
         if: ${{ matrix.node-version == '22.x' }}

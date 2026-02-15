@@ -52,7 +52,8 @@ const { activeGenre, error, filteredItems, genres, loading, toggleGenre } = useI
 const showCopyMessage = ref(false)
 const copyToClipboard = async () => {
   try {
-    const json = JSON.stringify(filteredItems.value, null, 2)
+    const dataToCopy = filteredItems.value.map(({ image, url, ...rest }) => rest)
+    const json = JSON.stringify(dataToCopy, null, 2)
     await navigator.clipboard.writeText(json)
     showCopyMessage.value = true
     setTimeout(() => {

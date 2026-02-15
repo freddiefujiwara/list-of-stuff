@@ -12,9 +12,9 @@ vi.mock('@/utils/items', async (importOriginal) => {
 })
 
 const buildItems = () => [
-  { title: 'A', genre: 'Gear', price: 1000 },
-  { title: 'B', genre: 'Food', price: 2500 },
-  { title: 'C', genre: 'Gear', price: 4200 },
+  { title: 'A', genre: 'Gear', price: 1000, image: 'a.jpg', url: 'https://a.com' },
+  { title: 'B', genre: 'Food', price: 2500, image: 'b.jpg', url: 'https://b.com' },
+  { title: 'C', genre: 'Gear', price: 4200, image: 'c.jpg', url: 'https://c.com' },
 ]
 
 const mockFetchResolve = (items) => {
@@ -98,7 +98,7 @@ describe('App.vue', async () => {
     expect(wrapper.findAllComponents({ name: 'GearItemCard' }).length).toBe(mockItems.length)
   })
 
-  it('copies filtered items to clipboard when copy button is clicked', async () => {
+  it('copies filtered items to clipboard (excluding image and url) when copy button is clicked', async () => {
     const mockItems = buildItems()
     mockFetchResolve(mockItems)
     const writeTextSpy = vi.fn().mockResolvedValue()
@@ -114,7 +114,8 @@ describe('App.vue', async () => {
     const copyButton = wrapper.find('.btn-copy')
     await copyButton.trigger('click')
 
-    expect(writeTextSpy).toHaveBeenCalledWith(JSON.stringify(mockItems, null, 2))
+    const expectedData = mockItems.map(({ image, url, ...rest }) => rest)
+    expect(writeTextSpy).toHaveBeenCalledWith(JSON.stringify(expectedData, null, 2))
     expect(wrapper.text()).toContain('コピー完了')
   })
 

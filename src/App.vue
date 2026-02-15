@@ -14,7 +14,7 @@
         >
           {{ genre }}
         </button>
-        <button type="button" class="btn-copy" @click="copyToClipboard">
+        <button type="button" class="btn-copy" :disabled="loading" @click="copyToClipboard">
           {{ showCopyMessage ? 'コピー完了' : 'コピー' }}
         </button>
       </div>
@@ -125,9 +125,15 @@ h1 {
   transition: all 0.2s;
 }
 
-.btn-copy:hover {
+.btn-copy:hover:not(:disabled) {
   background: #0ea5e9;
   color: #ffffff;
+}
+
+.btn-copy:disabled {
+  border-color: #cbd5e1;
+  color: #cbd5e1;
+  cursor: not-allowed;
 }
 
 .content {

@@ -42,6 +42,8 @@ describe('App.vue', async () => {
     const wrapper = mount(App)
 
     expect(wrapper.text()).toContain('読み込み中です…')
+    const copyButton = wrapper.find('.btn-copy')
+    expect(copyButton.element.disabled).toBe(true)
   })
 
   it('displays an error message if the data fetch fails', async () => {
@@ -65,6 +67,8 @@ describe('App.vue', async () => {
 
     expect(mockShuffleItems).toHaveBeenCalledWith(mockItems)
     expect(wrapper.findAllComponents({ name: 'GearItemCard' }).length).toBe(mockItems.length)
+    const copyButton = wrapper.find('.btn-copy')
+    expect(copyButton.element.disabled).toBe(false)
   })
 
   it('filters the list of items when a genre is clicked', async () => {

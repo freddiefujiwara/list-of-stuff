@@ -12,9 +12,9 @@ vi.mock('@/utils/items', async (importOriginal) => {
 })
 
 const buildItems = () => [
-  { title: 'A', genre: 'Gear', price: 1000 },
-  { title: 'B', genre: 'Food', price: 2500 },
-  { title: 'C', genre: 'Gear', price: 4200 },
+  { title: 'A', genre: 'Gear', price: 1000, image: 'a.jpg', url: 'https://a.com' },
+  { title: 'B', genre: 'Food', price: 2500, image: 'b.jpg', url: 'https://b.com' },
+  { title: 'C', genre: 'Gear', price: 4200, image: 'c.jpg', url: 'https://c.com' },
 ]
 
 const mockFetchResolve = (items) => {
@@ -42,6 +42,8 @@ describe('App.vue', async () => {
     const wrapper = mount(App)
 
     expect(wrapper.text()).toContain('読み込み中です…')
+    const copyButton = wrapper.find('.btn-copy')
+    expect(copyButton.element.disabled).toBe(true)
   })
 
   it('displays an error message if the data fetch fails', async () => {
@@ -65,6 +67,8 @@ describe('App.vue', async () => {
 
     expect(mockShuffleItems).toHaveBeenCalledWith(mockItems)
     expect(wrapper.findAllComponents({ name: 'GearItemCard' }).length).toBe(mockItems.length)
+    const copyButton = wrapper.find('.btn-copy')
+    expect(copyButton.element.disabled).toBe(false)
   })
 
   it('filters the list of items when a genre is clicked', async () => {
@@ -92,5 +96,72 @@ describe('App.vue', async () => {
     await genreButton.trigger('click')
 
     expect(wrapper.findAllComponents({ name: 'GearItemCard' }).length).toBe(mockItems.length)
+  })
+
+  it('copies filtered items to clipboard (excluding image and url) when copy button is clicked', async () => {
+    const mockItems = buildItems()
+    mockFetchResolve(mockItems)
+    const writeTextSpy = vi.fn().mockResolvedValue()
+    Object.assign(navigator, {
+      clipboard: {
+        writeText: writeTextSpy,
+      },
+    })
+
+    const wrapper = mount(App)
+    await flushPromises()
+
+    const copyButton = wrapper.find('.btn-copy')
+    await copyButton.trigger('click')
+
+    const expectedData = mockItems.map(({ image, url, ...rest }) => rest)
+    expect(writeTextSpy).toHaveBeenCalledWith(JSON.stringify(expectedData, null, 2))
+    expect(wrapper.text()).toContain('コピー完了')
+  })
+
+  it('shows copy completion message temporarily', async () => {
+    vi.useFakeTimers()
+    const mockItems = buildItems()
+    mockFetchResolve(mockItems)
+    Object.assign(navigator, {
+      clipboard: {
+        writeText: vi.fn().mockResolvedValue(),
+      },
+    })
+
+    const wrapper = mount(App)
+    await flushPromises()
+
+    const copyButton = wrapper.find('.btn-copy')
+    await copyButton.trigger('click')
+
+    expect(wrapper.text()).toContain('コピー完了')
+
+    vi.advanceTimersByTime(2000)
+    await wrapper.vm.$nextTick()
+
+    expect(wrapper.text()).not.toContain('コピー完了')
+    expect(wrapper.text()).toContain('コピー')
+    vi.useRealTimers()
+  })
+
+  it('logs error when clipboard copy fails', async () => {
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const mockItems = buildItems()
+    mockFetchResolve(mockItems)
+    Object.assign(navigator, {
+      clipboard: {
+        writeText: vi.fn().mockRejectedValue(new Error('Copy failed')),
+      },
+    })
+
+    const wrapper = mount(App)
+    await flushPromises()
+
+    const copyButton = wrapper.find('.btn-copy')
+    await copyButton.trigger('click')
+
+    expect(consoleSpy).toHaveBeenCalledWith('Failed to copy:', expect.any(Error))
+    consoleSpy.mockRestore()
   })
 })

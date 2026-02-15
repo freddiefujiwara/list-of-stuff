@@ -93,4 +93,70 @@ describe('App.vue', async () => {
 
     expect(wrapper.findAllComponents({ name: 'GearItemCard' }).length).toBe(mockItems.length)
   })
+
+  it('copies filtered items to clipboard when copy button is clicked', async () => {
+    const mockItems = buildItems()
+    mockFetchResolve(mockItems)
+    const writeTextSpy = vi.fn().mockResolvedValue()
+    Object.assign(navigator, {
+      clipboard: {
+        writeText: writeTextSpy,
+      },
+    })
+
+    const wrapper = mount(App)
+    await flushPromises()
+
+    const copyButton = wrapper.find('.btn-copy')
+    await copyButton.trigger('click')
+
+    expect(writeTextSpy).toHaveBeenCalledWith(JSON.stringify(mockItems, null, 2))
+    expect(wrapper.text()).toContain('コピー完了')
+  })
+
+  it('shows copy completion message temporarily', async () => {
+    vi.useFakeTimers()
+    const mockItems = buildItems()
+    mockFetchResolve(mockItems)
+    Object.assign(navigator, {
+      clipboard: {
+        writeText: vi.fn().mockResolvedValue(),
+      },
+    })
+
+    const wrapper = mount(App)
+    await flushPromises()
+
+    const copyButton = wrapper.find('.btn-copy')
+    await copyButton.trigger('click')
+
+    expect(wrapper.text()).toContain('コピー完了')
+
+    vi.advanceTimersByTime(2000)
+    await wrapper.vm.$nextTick()
+
+    expect(wrapper.text()).not.toContain('コピー完了')
+    expect(wrapper.text()).toContain('コピー')
+    vi.useRealTimers()
+  })
+
+  it('logs error when clipboard copy fails', async () => {
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const mockItems = buildItems()
+    mockFetchResolve(mockItems)
+    Object.assign(navigator, {
+      clipboard: {
+        writeText: vi.fn().mockRejectedValue(new Error('Copy failed')),
+      },
+    })
+
+    const wrapper = mount(App)
+    await flushPromises()
+
+    const copyButton = wrapper.find('.btn-copy')
+    await copyButton.trigger('click')
+
+    expect(consoleSpy).toHaveBeenCalledWith('Failed to copy:', expect.any(Error))
+    consoleSpy.mockRestore()
+  })
 })

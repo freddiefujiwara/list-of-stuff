@@ -14,6 +14,9 @@
         >
           {{ genre }}
         </button>
+        <button type="button" class="btn-copy" @click="copyToClipboard">
+          {{ showCopyMessage ? 'コピー完了' : 'コピー' }}
+        </button>
       </div>
     </header>
 
@@ -39,11 +42,26 @@
 </template>
 
 <script setup>
+import { ref } from 'vue'
 import Item from '@/components/Item.vue'
 import { API_URL } from '@/constants/app'
 import { useItems } from '@/composables/useItems'
 
 const { activeGenre, error, filteredItems, genres, loading, toggleGenre } = useItems(API_URL)
+
+const showCopyMessage = ref(false)
+const copyToClipboard = async () => {
+  try {
+    const json = JSON.stringify(filteredItems.value, null, 2)
+    await navigator.clipboard.writeText(json)
+    showCopyMessage.value = true
+    setTimeout(() => {
+      showCopyMessage.value = false
+    }, 2000)
+  } catch (err) {
+    console.error('Failed to copy:', err)
+  }
+}
 </script>
 
 <style scoped>
@@ -93,6 +111,23 @@ h1 {
 .chip.active {
   background: #0ea5e9;
   color: #f8fafc;
+}
+
+.btn-copy {
+  border: 1px solid #0ea5e9;
+  border-radius: 999px;
+  padding: 8px 12px;
+  background: transparent;
+  color: #0ea5e9;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.btn-copy:hover {
+  background: #0ea5e9;
+  color: #ffffff;
 }
 
 .content {

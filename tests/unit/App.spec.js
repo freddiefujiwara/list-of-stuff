@@ -303,6 +303,8 @@ describe('App.vue', async () => {
     const links = wrapper.findAll('.site-footer .foot-links a')
     expect(links.map((link) => link.attributes('href'))).toEqual([
       'https://freddiefujiwara.com/',
+      'https://freddiefujiwara.com/blog/',
+      'https://freddiefujiwara.com/list-of-stuff/',
       'https://www.instagram.com/freddiefujiwara',
       'https://www.facebook.com/freddiefujiwara',
       'https://www.google.com/maps/contrib/105456242747265663411/reviews',
@@ -314,6 +316,8 @@ describe('App.vue', async () => {
     ])
     expect(links.map((link) => link.text())).toEqual([
       'トップ ↗',
+      'ブログ ↗',
+      '持ち物 ↗',
       'Instagram ↗',
       'Facebook ↗',
       'Googleマップの口コミ ↗',

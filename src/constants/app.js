@@ -1,2 +1,3 @@
 export const API_URL = import.meta.env.VITE_ITEMS_API || '<API>'
+export const ITEMS_CACHE_KEY = 'list-of-stuff:items:v1'
 export const FALLBACK_IMAGE_URL = 'https://tshop.r10s.jp/rukusu/cabinet/images/junbi.jpg'

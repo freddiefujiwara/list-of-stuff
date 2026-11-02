@@ -16,7 +16,6 @@
     <main class="page">
       <header class="hero">
         <h1>ミニマリストの持ち物一覧</h1>
-        <p class="lead">ジャンルを押すと絞り込み、再度押すと解除します。</p>
         <div class="chips">
           <button
             v-for="genre in genres"
@@ -236,18 +235,14 @@ h1 {
   line-height: 1.45;
 }
 
-.lead {
-  margin: 0;
-  color: var(--ink-2);
-}
-
 .chips {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
 }
 
-.chip {
+.chip,
+.btn-clear-filter {
   border: 1px solid var(--line);
   border-radius: 999px;
   padding: 8px 14px;
@@ -258,7 +253,8 @@ h1 {
   transition: all 0.2s;
 }
 
-.chip:hover {
+.chip:hover,
+.btn-clear-filter:hover {
   border-color: var(--accent);
   color: var(--accent);
 }
@@ -273,22 +269,6 @@ h1 {
   background: var(--accent-strong);
   border-color: var(--accent-strong);
   color: #ffffff;
-}
-
-.btn-clear-filter {
-  border: none;
-  background: transparent;
-  color: var(--ink-2);
-  font: inherit;
-  font-size: 14px;
-  padding: 8px 10px;
-  cursor: pointer;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-
-.btn-clear-filter:hover {
-  color: var(--accent);
 }
 
 .btn-copy {

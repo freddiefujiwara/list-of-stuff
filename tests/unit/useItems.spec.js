@@ -92,6 +92,40 @@ describe('useItems', async () => {
     expect(wrapper.vm.filteredItems.length).toBe(3)
   })
 
+  it('clears the active genre filter with clearGenre', async () => {
+    const items = buildItems()
+    mockFetchResolve(items)
+
+    const wrapper = mount(TestHarness)
+    await flushPromises()
+
+    wrapper.vm.toggleGenre('Gear')
+    await nextTick()
+
+    expect(wrapper.vm.activeGenre).toBe('Gear')
+    expect(wrapper.vm.filteredItems.length).toBe(2)
+
+    wrapper.vm.clearGenre()
+    await nextTick()
+
+    expect(wrapper.vm.activeGenre).toBe('')
+    expect(wrapper.vm.filteredItems.length).toBe(3)
+  })
+
+  it('keeps the filter cleared when clearGenre is called with no active genre', async () => {
+    const items = buildItems()
+    mockFetchResolve(items)
+
+    const wrapper = mount(TestHarness)
+    await flushPromises()
+
+    wrapper.vm.clearGenre()
+    await nextTick()
+
+    expect(wrapper.vm.activeGenre).toBe('')
+    expect(wrapper.vm.filteredItems.length).toBe(3)
+  })
+
   it('sets an error when the request fails', async () => {
     const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
     mockFetchReject(new Error('API Error'))

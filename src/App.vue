@@ -28,8 +28,13 @@
           >
             {{ genre }}
           </button>
-          <button type="button" class="btn-copy" :disabled="loading" @click="copyToClipboard">
-            {{ showCopyMessage ? 'コピー完了' : 'コピー' }}
+          <button
+            v-show="activeGenre"
+            type="button"
+            class="btn-clear-filter"
+            @click="clearGenre"
+          >
+            フィルタを外す
           </button>
         </div>
       </header>
@@ -58,6 +63,11 @@
           <a href="https://freddiefujiwara.com/" target="_blank" rel="noopener">トップ <span class="arr">↗</span></a>
           <a href="https://freddiefujiwara.com/blog/" target="_blank" rel="noopener">ブログ <span class="arr">↗</span></a>
         </div>
+        <div class="foot-actions">
+          <button type="button" class="btn-copy" :disabled="loading" @click="copyToClipboard">
+            {{ showCopyMessage ? 'コピー完了' : 'コピー' }}
+          </button>
+        </div>
         <p class="copy">© {{ year }} 藤原史和（Fumikazu Fujiwara）— freddiefujiwara.com</p>
       </footer>
     </main>
@@ -70,7 +80,7 @@ import Item from '@/components/Item.vue'
 import { API_URL } from '@/constants/app'
 import { useItems } from '@/composables/useItems'
 
-const { activeGenre, error, filteredItems, genres, loading, toggleGenre } = useItems(API_URL)
+const { activeGenre, clearGenre, error, filteredItems, genres, loading, toggleGenre } = useItems(API_URL)
 
 const year = new Date().getFullYear()
 
@@ -265,6 +275,22 @@ h1 {
   color: #ffffff;
 }
 
+.btn-clear-filter {
+  border: none;
+  background: transparent;
+  color: var(--ink-2);
+  font: inherit;
+  font-size: 14px;
+  padding: 8px 10px;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.btn-clear-filter:hover {
+  color: var(--accent);
+}
+
 .btn-copy {
   border: 1px solid var(--accent);
   border-radius: 999px;
@@ -330,6 +356,10 @@ h1 {
 
 .site-footer .foot-links a:hover {
   color: var(--accent);
+}
+
+.site-footer .foot-actions {
+  margin-bottom: 14px;
 }
 
 .site-footer .copy {

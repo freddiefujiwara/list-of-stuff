@@ -1,5 +1,6 @@
 import { computed, onMounted, ref } from 'vue'
 import { filterByGenre, shuffleItems } from '@/utils/items'
+import { sortGenres } from '@/utils/genrePath'
 import { ITEMS_CACHE_KEY } from '@/constants/app'
 
 const readCachedItems = () => {
@@ -28,7 +29,8 @@ export function useItems(apiUrl) {
   const error = ref('')
 
   const genres = computed(() => {
-    return Array.from(new Set(allItems.value.map((item) => item.genre).filter(Boolean)))
+    // タブの並びはアイテムの出現順に左右されないよう、固定順に並べ替える
+    return sortGenres(Array.from(new Set(allItems.value.map((item) => item.genre).filter(Boolean))))
   })
 
   const genreCounts = computed(() => {

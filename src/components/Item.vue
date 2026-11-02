@@ -73,9 +73,10 @@ const handleImageError = (event) => {
 
 <style scoped>
 .card {
-  background: #ffffff;
-  border-radius: 14px;
-  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(34, 29, 22, 0.06);
   overflow: hidden;
   display: grid;
   gap: 12px;
@@ -86,7 +87,7 @@ const handleImageError = (event) => {
 
 .card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 16px 36px rgba(15, 23, 42, 0.12);
+  box-shadow: 0 16px 36px rgba(34, 29, 22, 0.12);
 }
 
 .media {
@@ -120,37 +121,43 @@ const handleImageError = (event) => {
 
 .chip {
   border: none;
-  background: #e0f2fe;
-  color: #0ea5e9;
+  background: var(--accent-soft);
+  color: var(--accent-strong);
   padding: 6px 12px;
   border-radius: 999px;
+  font: inherit;
+  font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
+  transition: all 0.2s;
 }
 
 .chip:hover {
-  background: #bae6fd;
+  background: var(--accent);
+  color: #ffffff;
 }
 
 .price {
   font-weight: 700;
-  color: #0f172a;
+  color: var(--ink);
 }
 
 .title {
   font-size: 16px;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--ink);
   text-decoration: none;
 }
 
 .title:hover {
+  color: var(--accent);
   text-decoration: underline;
+  text-underline-offset: 4px;
 }
 
 .comment {
   margin: 0;
-  color: #475569;
-  line-height: 1.5;
+  color: var(--ink-2);
+  line-height: 1.7;
 }
 </style>

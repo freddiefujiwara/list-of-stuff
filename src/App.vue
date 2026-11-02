@@ -211,6 +211,11 @@ const copyToClipboard = async () => {
   }
 }
 
+:global(html) {
+  /* スクロールバーの有無で本文幅が変わらないよう、溝を常時確保する */
+  scrollbar-gutter: stable;
+}
+
 :global(body) {
   margin: 0;
   font-family: 'Zen Kaku Gothic New', 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', 'Yu Gothic', sans-serif;

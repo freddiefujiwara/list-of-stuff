@@ -52,6 +52,62 @@ describe('Item.vue', () => {
     expect(wrapper.find('img').attributes('src')).toBe('https://tshop.r10s.jp/rukusu/cabinet/images/junbi.jpg')
   })
 
+  it('shows the shortened genre label on the chip', () => {
+    const wrapper = mountItem(buildProps({ genre: '【住】暮らしにまつわる物' }))
+
+    expect(wrapper.find('.chip').text()).toBe('住・暮らし')
+  })
+
+  it('emits the raw genre when the shortened chip is clicked', async () => {
+    const wrapper = mountItem(buildProps({ genre: '【住】暮らしにまつわる物' }))
+
+    await wrapper.find('.chip').trigger('click')
+
+    expect(wrapper.emitted('filter')[0]).toEqual(['【住】暮らしにまつわる物'])
+  })
+
+  it('renders an empty chip label when no genre is provided', () => {
+    const wrapper = mountItem(buildProps({ genre: undefined }))
+
+    expect(wrapper.find('.chip').text()).toBe('')
+  })
+
+  it('hides the comment when it is empty', () => {
+    const wrapper = mountItem(buildProps({ comment: '' }))
+
+    expect(wrapper.find('.comment').isVisible()).toBe(false)
+  })
+
+  it('hides the comment when it is only whitespace', () => {
+    const wrapper = mountItem(buildProps({ comment: '   ' }))
+
+    expect(wrapper.find('.comment').isVisible()).toBe(false)
+  })
+
+  it('hides the comment when it is not provided', () => {
+    const wrapper = mountItem(buildProps({ comment: undefined }))
+
+    expect(wrapper.find('.comment').isVisible()).toBe(false)
+  })
+
+  it('shows the unit count next to the price when more than one', () => {
+    const wrapper = mountItem(buildProps({ unit: 3 }))
+
+    expect(wrapper.find('.unit').text()).toBe('×3')
+  })
+
+  it('does not show the unit count when the unit is one', () => {
+    const wrapper = mountItem(buildProps({ unit: 1 }))
+
+    expect(wrapper.find('.unit').text()).toBe('')
+  })
+
+  it('does not show the unit count when no unit is provided', () => {
+    const wrapper = mountItem(buildProps())
+
+    expect(wrapper.find('.unit').text()).toBe('')
+  })
+
   it('emits a "filter" event when the genre chip is clicked', async () => {
     const props = buildProps()
     const wrapper = mountItem(props)

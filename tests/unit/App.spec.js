@@ -505,6 +505,52 @@ describe('App.vue genre URL routing', () => {
     wrapper.unmount()
   })
 
+  it('renders the hero inner as a link to the base path', async () => {
+    mockFetchResolve(jpItems())
+
+    const wrapper = mount(App)
+    await flushPromises()
+
+    const heroLink = wrapper.find('a.hero-inner')
+    expect(heroLink.exists()).toBe(true)
+    expect(heroLink.attributes('href')).toBe('/')
+    expect(heroLink.find('.hero-place').text()).toBe('KAWAGUCHI — LIST OF STUFF')
+    expect(heroLink.find('.h1-name').text()).toBe('藤原史和')
+    wrapper.unmount()
+  })
+
+  it('clears the filter and returns the URL to the base path when the hero is clicked', async () => {
+    mockFetchResolve(jpItems())
+
+    const wrapper = mount(App)
+    await flushPromises()
+
+    await findGenreLink(wrapper, '電・家電').trigger('click')
+    expect(window.location.pathname).toBe('/electronics')
+    expect(wrapper.findAllComponents({ name: 'GearItemCard' }).length).toBe(2)
+
+    await wrapper.find('a.hero-inner').trigger('click')
+
+    expect(window.location.pathname).toBe('/')
+    expect(wrapper.findAllComponents({ name: 'GearItemCard' }).length).toBe(3)
+    expect(wrapper.find('.genre-link.active').exists()).toBe(false)
+    wrapper.unmount()
+  })
+
+  it('keeps the unfiltered state when the hero is clicked with no filter active', async () => {
+    mockFetchResolve(jpItems())
+
+    const wrapper = mount(App)
+    await flushPromises()
+
+    await wrapper.find('a.hero-inner').trigger('click')
+
+    expect(window.location.pathname).toBe('/')
+    expect(wrapper.findAllComponents({ name: 'GearItemCard' }).length).toBe(3)
+    expect(wrapper.find('.genre-link.active').exists()).toBe(false)
+    wrapper.unmount()
+  })
+
   it('leaves the URL unchanged for genres that have no path', async () => {
     mockFetchResolve(buildItems())
 

@@ -1,5 +1,10 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { filterByGenre, formatYen, shuffleItems } from '../../src/utils/items'
+import {
+  filterByGenre,
+  formatGenreLabel,
+  formatYen,
+  shuffleItems,
+} from '../../src/utils/items'
 
 describe('item helpers', () => {
   let items
@@ -23,6 +28,19 @@ describe('item helpers', () => {
     const filtered = filterByGenre(items, '')
 
     expect(filtered.length).toBe(items.length)
+  })
+
+  it('formatGenreLabel shortens the long genre format', () => {
+    expect(formatGenreLabel('【電】家電にまつわる物')).toBe('電・家電')
+    expect(formatGenreLabel('【食】キッチンにまつわる物')).toBe('食・キッチン')
+    expect(formatGenreLabel('【健】健康にまつわる物')).toBe('健・健康')
+  })
+
+  it('formatGenreLabel leaves other labels unchanged', () => {
+    expect(formatGenreLabel('Gear')).toBe('Gear')
+    expect(formatGenreLabel('【電】家電')).toBe('【電】家電')
+    expect(formatGenreLabel('家電にまつわる物')).toBe('家電にまつわる物')
+    expect(formatGenreLabel('')).toBe('')
   })
 
   it('formatYen formats numbers with separators and suffix', () => {

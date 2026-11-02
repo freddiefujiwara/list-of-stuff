@@ -27,6 +27,11 @@ const mockFetchReject = (error) => {
   vi.spyOn(global, 'fetch').mockRejectedValue(error)
 }
 
+const findGenreLink = (wrapper, label) =>
+  wrapper
+    .findAll('.genre-link')
+    .find((button) => button.find('.genre-label').text() === label)
+
 describe('App.vue', async () => {
   // Asynchronously import the mocked module to get a handle on the spy
   const { shuffleItems: mockShuffleItems } = await import('@/utils/items')
@@ -42,8 +47,7 @@ describe('App.vue', async () => {
     const wrapper = mount(App)
 
     expect(wrapper.text()).toContain('読み込み中です…')
-    const copyButton = wrapper.find('.btn-copy')
-    expect(copyButton.element.disabled).toBe(true)
+    expect(wrapper.find('.copy-link').classes()).toContain('disabled')
   })
 
   it('displays an error message if the data fetch fails', async () => {
@@ -67,21 +71,22 @@ describe('App.vue', async () => {
 
     expect(mockShuffleItems).toHaveBeenCalledWith(mockItems)
     expect(wrapper.findAllComponents({ name: 'GearItemCard' }).length).toBe(mockItems.length)
-    const copyButton = wrapper.find('.btn-copy')
-    expect(copyButton.element.disabled).toBe(false)
+    expect(wrapper.find('.copy-link').classes()).not.toContain('disabled')
   })
 
-  it('filters the list of items when a genre is clicked', async () => {
+  it('filters the list of items when a genre link is clicked', async () => {
     const mockItems = buildItems()
     mockFetchResolve(mockItems)
 
     const wrapper = mount(App)
     await flushPromises()
 
-    const genreButton = wrapper.findAll('.chip').find((button) => button.text() === 'Gear')
+    const genreButton = findGenreLink(wrapper, 'Gear')
     await genreButton.trigger('click')
 
     expect(wrapper.findAllComponents({ name: 'GearItemCard' }).length).toBe(2)
+    expect(findGenreLink(wrapper, 'Gear').classes()).toContain('active')
+    expect(findGenreLink(wrapper, 'Food').classes()).not.toContain('active')
   })
 
   it('clears the filter when the same genre is clicked again', async () => {
@@ -91,22 +96,80 @@ describe('App.vue', async () => {
     const wrapper = mount(App)
     await flushPromises()
 
-    const genreButton = wrapper.findAll('.chip').find((button) => button.text() === 'Gear')
+    const genreButton = findGenreLink(wrapper, 'Gear')
     await genreButton.trigger('click')
     await genreButton.trigger('click')
 
     expect(wrapper.findAllComponents({ name: 'GearItemCard' }).length).toBe(mockItems.length)
+    expect(findGenreLink(wrapper, 'Gear').classes()).not.toContain('active')
   })
 
-  it('places the copy button in the footer instead of the chips row', async () => {
+  it('shows shortened genre labels with the count of all items in each genre', async () => {
+    localStorage.clear()
+    const jpItems = [
+      { title: 'A', genre: '【電】家電にまつわる物', price: 1000, image: 'a.jpg', url: 'https://a.com' },
+      { title: 'B', genre: '【食】キッチンにまつわる物', price: 2500, image: 'b.jpg', url: 'https://b.com' },
+      { title: 'C', genre: '【電】家電にまつわる物', price: 4200, image: 'c.jpg', url: 'https://c.com' },
+    ]
+    mockFetchResolve(jpItems)
+
+    const wrapper = mount(App)
+    await flushPromises()
+
+    const links = wrapper.findAll('.genre-link')
+    expect(links.map((link) => link.find('.genre-label').text())).toEqual([
+      '電・家電',
+      '食・キッチン',
+    ])
+    expect(links.map((link) => link.find('.genre-count').text())).toEqual(['2', '1'])
+
+    // Filtering still keys on the original genre string.
+    await links[0].trigger('click')
+    expect(wrapper.findAllComponents({ name: 'GearItemCard' }).length).toBe(2)
+  })
+
+  it('leaves genre labels that do not match the long format unchanged', async () => {
     const mockItems = buildItems()
     mockFetchResolve(mockItems)
 
     const wrapper = mount(App)
     await flushPromises()
 
-    expect(wrapper.find('.chips .btn-copy').exists()).toBe(false)
-    expect(wrapper.find('.site-footer .btn-copy').exists()).toBe(true)
+    const links = wrapper.findAll('.genre-link')
+    expect(links.map((link) => link.find('.genre-label').text())).toEqual(['Gear', 'Food'])
+    expect(links.map((link) => link.find('.genre-count').text())).toEqual(['2', '1'])
+  })
+
+  it('places the copy link in the utility row above the footer instead of a footer button', async () => {
+    const mockItems = buildItems()
+    mockFetchResolve(mockItems)
+
+    const wrapper = mount(App)
+    await flushPromises()
+
+    expect(wrapper.find('.genre-filter .copy-link').exists()).toBe(false)
+    expect(wrapper.find('.site-footer .btn-copy').exists()).toBe(false)
+    expect(wrapper.find('.site-footer .foot-actions').exists()).toBe(false)
+    const utilityRow = wrapper.find('.footer-link')
+    expect(utilityRow.exists()).toBe(true)
+    expect(utilityRow.find('.copy-link').text()).toBe('コピー')
+    expect(utilityRow.text()).toContain('トップへ戻る')
+  })
+
+  it('scrolls back to the top when the back-to-top link is clicked', async () => {
+    const scrollToSpy = vi.spyOn(window, 'scrollTo').mockImplementation(() => {})
+    const mockItems = buildItems()
+    mockFetchResolve(mockItems)
+
+    const wrapper = mount(App)
+    await flushPromises()
+
+    const backToTop = wrapper.findAll('.footer-link a')[0]
+    expect(backToTop.text()).toBe('トップへ戻る')
+    await backToTop.trigger('click')
+
+    expect(scrollToSpy).toHaveBeenCalledWith({ top: 0, behavior: 'smooth' })
+    scrollToSpy.mockRestore()
   })
 
   it('does not show the clear filter button when no genre is selected', async () => {
@@ -126,11 +189,11 @@ describe('App.vue', async () => {
     const wrapper = mount(App)
     await flushPromises()
 
-    const genreButton = wrapper.findAll('.chip').find((button) => button.text() === 'Gear')
+    const genreButton = findGenreLink(wrapper, 'Gear')
     await genreButton.trigger('click')
 
     expect(wrapper.findAllComponents({ name: 'GearItemCard' }).length).toBe(2)
-    const clearButton = wrapper.find('.chips .btn-clear-filter')
+    const clearButton = wrapper.find('.genre-filter .btn-clear-filter')
     expect(clearButton.element.style.display).toBe('')
     expect(clearButton.text()).toBe('フィルタを外す')
 
@@ -140,7 +203,7 @@ describe('App.vue', async () => {
     expect(wrapper.find('.btn-clear-filter').element.style.display).toBe('none')
   })
 
-  it('copies filtered items to clipboard (excluding image and url) when copy button is clicked', async () => {
+  it('copies filtered items to clipboard (excluding image and url) when the copy link is clicked', async () => {
     const mockItems = buildItems()
     mockFetchResolve(mockItems)
     const writeTextSpy = vi.fn().mockResolvedValue()
@@ -153,8 +216,8 @@ describe('App.vue', async () => {
     const wrapper = mount(App)
     await flushPromises()
 
-    const copyButton = wrapper.find('.btn-copy')
-    await copyButton.trigger('click')
+    const copyLink = wrapper.find('.copy-link')
+    await copyLink.trigger('click')
 
     const expectedData = mockItems.map(({ image, url, ...rest }) => rest)
     expect(writeTextSpy).toHaveBeenCalledWith(JSON.stringify(expectedData, null, 2))
@@ -174,11 +237,11 @@ describe('App.vue', async () => {
     const wrapper = mount(App)
     await flushPromises()
 
-    const genreButton = wrapper.findAll('.chip').find((button) => button.text() === 'Gear')
+    const genreButton = findGenreLink(wrapper, 'Gear')
     await genreButton.trigger('click')
 
-    const copyButton = wrapper.find('.site-footer .btn-copy')
-    await copyButton.trigger('click')
+    const copyLink = wrapper.find('.footer-link .copy-link')
+    await copyLink.trigger('click')
 
     const expectedData = mockItems
       .filter((item) => item.genre === 'Gear')
@@ -199,8 +262,8 @@ describe('App.vue', async () => {
     const wrapper = mount(App)
     await flushPromises()
 
-    const copyButton = wrapper.find('.btn-copy')
-    await copyButton.trigger('click')
+    const copyLink = wrapper.find('.copy-link')
+    await copyLink.trigger('click')
 
     expect(wrapper.text()).toContain('コピー完了')
 
@@ -226,6 +289,8 @@ describe('App.vue', async () => {
     expect(sep.text()).toBe('｜')
     expect(sep.attributes('aria-hidden')).toBe('true')
     expect(wrapper.find('.hero h1').text()).not.toContain('持ち物リスト')
+    // The hero contains only the label and the heading, like the blog.
+    expect(wrapper.find('.hero .items-stats').exists()).toBe(false)
   })
 
   it('shows the same footer links as the blog', async () => {
@@ -262,20 +327,21 @@ describe('App.vue', async () => {
       expect(link.attributes('target')).toBe('_blank')
       expect(link.attributes('rel')).toBe('noopener')
     }
-    // The copy button stays between the links and the copyright line.
-    expect(wrapper.find('.site-footer .foot-actions .btn-copy').exists()).toBe(true)
+    // The footer itself holds only the links and the copyright line, like the blog.
+    expect(wrapper.find('.site-footer .foot-actions').exists()).toBe(false)
+    expect(wrapper.find('.site-footer .btn-copy').exists()).toBe(false)
   })
 
-  it('hides the hero stats while loading', () => {
+  it('hides the item count while loading', () => {
     localStorage.clear()
     vi.spyOn(global, 'fetch').mockImplementation(() => new Promise(() => {}))
 
     const wrapper = mount(App)
 
-    expect(wrapper.find('.hero-stats').element.style.display).toBe('none')
+    expect(wrapper.find('.items-stats').element.style.display).toBe('none')
   })
 
-  it('hides the hero stats when the data fetch fails', async () => {
+  it('hides the item count when the data fetch fails', async () => {
     localStorage.clear()
     const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
     mockFetchReject(new Error('API Error'))
@@ -283,34 +349,36 @@ describe('App.vue', async () => {
     const wrapper = mount(App)
     await flushPromises()
 
-    expect(wrapper.find('.hero-stats').element.style.display).toBe('none')
+    expect(wrapper.find('.items-stats').element.style.display).toBe('none')
 
     consoleSpy.mockRestore()
   })
 
-  it('shows the total item count in the hero after a successful fetch', async () => {
+  it('shows the total item count above the filter after a successful fetch', async () => {
     const mockItems = buildItems()
     mockFetchResolve(mockItems)
 
     const wrapper = mount(App)
     await flushPromises()
 
-    expect(wrapper.find('.hero-stats').element.style.display).toBe('')
-    expect(wrapper.find('.hero-stats').text()).toBe('全3点')
+    const stats = wrapper.find('.page > .items-stats')
+    expect(stats.exists()).toBe(true)
+    expect(stats.element.style.display).toBe('')
+    expect(stats.text()).toBe('全3点')
   })
 
-  it('keeps the hero stats at the total count while a genre filter is active', async () => {
+  it('keeps the total item count while a genre filter is active', async () => {
     const mockItems = buildItems()
     mockFetchResolve(mockItems)
 
     const wrapper = mount(App)
     await flushPromises()
 
-    const genreButton = wrapper.findAll('.chip').find((button) => button.text() === 'Gear')
+    const genreButton = findGenreLink(wrapper, 'Gear')
     await genreButton.trigger('click')
 
     expect(wrapper.findAllComponents({ name: 'GearItemCard' }).length).toBe(2)
-    expect(wrapper.find('.hero-stats').text()).toBe('全3点')
+    expect(wrapper.find('.items-stats').text()).toBe('全3点')
   })
 
   it('logs error when clipboard copy fails', async () => {
@@ -326,8 +394,8 @@ describe('App.vue', async () => {
     const wrapper = mount(App)
     await flushPromises()
 
-    const copyButton = wrapper.find('.btn-copy')
-    await copyButton.trigger('click')
+    const copyLink = wrapper.find('.copy-link')
+    await copyLink.trigger('click')
 
     expect(consoleSpy).toHaveBeenCalledWith('Failed to copy:', expect.any(Error))
     consoleSpy.mockRestore()

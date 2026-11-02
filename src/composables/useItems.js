@@ -35,6 +35,8 @@ export function useItems(apiUrl) {
     return filterByGenre(allItems.value, activeGenre.value)
   })
 
+  const totalCount = computed(() => allItems.value.length)
+
   const toggleGenre = (genre) => {
     activeGenre.value = activeGenre.value === genre ? '' : genre
   }
@@ -74,5 +76,6 @@ export function useItems(apiUrl) {
     genres,
     loading,
     toggleGenre,
+    totalCount,
   }
 }

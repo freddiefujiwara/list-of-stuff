@@ -13,30 +13,35 @@
       </ul>
     </nav>
 
+    <header class="hero">
+      <div class="hero-inner">
+        <p class="hero-place">KAWAGUCHI — LIST OF STUFF</p>
+        <h1>持ち物リスト</h1>
+        <p v-show="!loading && !error" class="hero-stats">全{{ totalCount }}点</p>
+      </div>
+    </header>
+
     <main class="page">
-      <header class="hero">
-        <h1>ミニマリストの持ち物一覧</h1>
-        <div class="chips">
-          <button
-            v-for="genre in genres"
-            :key="genre"
-            type="button"
-            class="chip"
-            :class="{ active: activeGenre === genre }"
-            @click="toggleGenre(genre)"
-          >
-            {{ genre }}
-          </button>
-          <button
-            v-show="activeGenre"
-            type="button"
-            class="btn-clear-filter"
-            @click="clearGenre"
-          >
-            フィルタを外す
-          </button>
-        </div>
-      </header>
+      <div class="chips">
+        <button
+          v-for="genre in genres"
+          :key="genre"
+          type="button"
+          class="chip"
+          :class="{ active: activeGenre === genre }"
+          @click="toggleGenre(genre)"
+        >
+          {{ genre }}
+        </button>
+        <button
+          v-show="activeGenre"
+          type="button"
+          class="btn-clear-filter"
+          @click="clearGenre"
+        >
+          フィルタを外す
+        </button>
+      </div>
 
       <section class="content">
         <p v-if="loading" class="helper">読み込み中です…</p>
@@ -79,7 +84,8 @@ import Item from '@/components/Item.vue'
 import { API_URL } from '@/constants/app'
 import { useItems } from '@/composables/useItems'
 
-const { activeGenre, clearGenre, error, filteredItems, genres, loading, toggleGenre } = useItems(API_URL)
+const { activeGenre, clearGenre, error, filteredItems, genres, loading, toggleGenre, totalCount } =
+  useItems(API_URL)
 
 const year = new Date().getFullYear()
 
@@ -220,17 +226,67 @@ const copyToClipboard = async () => {
 }
 
 .hero {
-  display: grid;
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  min-height: 300px;
+  color: #fdfbf7;
+  overflow: hidden;
+  background: #241a12 url('https://freddiefujiwara.com/assets/hero-koinobori.jpg') center 38% / cover
+    no-repeat;
+}
+
+.hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(16, 11, 6, 0.88) 0%,
+    rgba(16, 11, 6, 0.45) 45%,
+    rgba(16, 11, 6, 0.15) 75%
+  );
+}
+
+.hero-inner {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 96px 20px 36px;
+}
+
+.hero-place {
+  display: inline-flex;
+  align-items: center;
   gap: 10px;
+  font-size: 12px;
+  letter-spacing: 0.22em;
+  font-weight: 700;
+  margin: 0 0 14px;
+}
+
+.hero-place::before {
+  content: '';
+  width: 34px;
+  height: 2px;
+  background: #f0764f;
 }
 
 h1 {
   margin: 0;
   font-family: 'Shippori Mincho B1', 'Hiragino Mincho ProN', 'Yu Mincho', serif;
-  font-size: clamp(1.6rem, 4.5vw, 2.1rem);
+  font-size: clamp(2rem, 6vw, 2.9rem);
   font-weight: 800;
-  letter-spacing: 0.02em;
-  line-height: 1.45;
+  letter-spacing: 0.03em;
+  line-height: 1.35;
+}
+
+.hero-stats {
+  margin: 12px 0 0;
+  font-size: 0.95rem;
+  color: rgba(253, 251, 247, 0.85);
 }
 
 .chips {

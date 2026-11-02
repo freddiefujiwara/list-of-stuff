@@ -344,4 +344,60 @@ describe('useItems', async () => {
 
     setItemSpy.mockRestore()
   })
+
+  describe('incremental rendering', () => {
+    const buildManyItems = (count, genre = 'Gear') =>
+      Array.from({ length: count }, (_, i) => ({
+        title: `Item ${i}`,
+        genre,
+        price: 100,
+      }))
+
+    it('shows only the first page until loadMore is called', async () => {
+      mockFetchResolve(buildManyItems(130))
+
+      const wrapper = mount(TestHarness)
+      await flushPromises()
+
+      expect(wrapper.vm.visibleItems.length).toBe(60)
+      expect(wrapper.vm.hasMore).toBe(true)
+
+      wrapper.vm.loadMore()
+      await nextTick()
+      expect(wrapper.vm.visibleItems.length).toBe(120)
+      expect(wrapper.vm.hasMore).toBe(true)
+
+      wrapper.vm.loadMore()
+      await nextTick()
+      expect(wrapper.vm.visibleItems.length).toBe(130)
+      expect(wrapper.vm.hasMore).toBe(false)
+
+      wrapper.vm.loadMore()
+      await nextTick()
+      expect(wrapper.vm.visibleItems.length).toBe(130)
+    })
+
+    it('restarts from the first page when the genre filter changes', async () => {
+      const items = [...buildManyItems(70, 'Gear'), ...buildManyItems(3, 'Food')]
+      mockFetchResolve(items)
+
+      const wrapper = mount(TestHarness)
+      await flushPromises()
+
+      wrapper.vm.loadMore()
+      await nextTick()
+      expect(wrapper.vm.visibleItems.length).toBe(73)
+      expect(wrapper.vm.hasMore).toBe(false)
+
+      wrapper.vm.toggleGenre('Food')
+      await nextTick()
+      expect(wrapper.vm.visibleItems.length).toBe(3)
+      expect(wrapper.vm.hasMore).toBe(false)
+
+      wrapper.vm.clearGenre()
+      await nextTick()
+      expect(wrapper.vm.visibleItems.length).toBe(60)
+      expect(wrapper.vm.hasMore).toBe(true)
+    })
+  })
 })

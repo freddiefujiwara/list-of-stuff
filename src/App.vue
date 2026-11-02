@@ -49,9 +49,10 @@
         <p v-else-if="error" class="helper error">{{ error }}</p>
         <div v-else class="grid">
           <Item
-            v-for="item in filteredItems"
+            v-for="(item, index) in visibleItems"
             :key="item.title"
             :comment="item.comment"
+            :eager="index < 8"
             :genre="item.genre"
             :image="item.image"
             :price="item.price"
@@ -61,6 +62,7 @@
             @filter="handleToggleGenre"
           />
         </div>
+        <div v-show="hasMore" :ref="setSentinel" class="load-more-sentinel" aria-hidden="true"></div>
       </section>
 
       <div class="footer-link">
@@ -111,9 +113,12 @@ const {
   filteredItems,
   genreCounts,
   genres,
+  hasMore,
   loading,
+  loadMore,
   toggleGenre,
   totalCount,
+  visibleItems,
 } = useItems(API_URL)
 
 // ジャンルフィルタとURLパスを同期する（共有用URL）。
@@ -168,6 +173,33 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener('popstate', handlePopState)
+})
+
+// Grow the rendered page when the sentinel below the grid approaches
+// the viewport, so the initial render stays small. The sentinel is
+// always in the DOM (hidden while nothing remains) because a hidden
+// element never intersects; its callback ref runs during the initial
+// patch, before the mounted hook below starts observing it.
+let loadMoreObserver = null
+let sentinelEl = null
+
+const setSentinel = (el) => {
+  sentinelEl = el
+}
+
+onMounted(() => {
+  if (typeof IntersectionObserver === 'undefined') return
+  loadMoreObserver = new IntersectionObserver(
+    (entries) => {
+      if (entries.some((entry) => entry.isIntersecting)) loadMore()
+    },
+    { rootMargin: '600px' },
+  )
+  loadMoreObserver.observe(sentinelEl)
+})
+
+onUnmounted(() => {
+  loadMoreObserver?.disconnect()
 })
 
 const year = new Date().getFullYear()
@@ -516,6 +548,10 @@ a.hero-inner {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   gap: 12px;
+}
+
+.load-more-sentinel {
+  height: 1px;
 }
 
 .site-footer {

@@ -157,4 +157,30 @@ describe('Item.vue', () => {
     // Should not change the src
     expect(img.attributes('src')).toBe('https://tshop.r10s.jp/rukusu/cabinet/images/junbi.jpg')
   })
+
+  it('requests a resized thumbnail for Rakuten images', () => {
+    const wrapper = mountItem(
+      buildProps({ image: 'https://tshop.r10s.jp/shop/cabinet/item.jpg' }),
+    )
+
+    expect(wrapper.find('img').attributes('src')).toBe(
+      'https://tshop.r10s.jp/shop/cabinet/item.jpg?_ex=400x400',
+    )
+  })
+
+  it('loads images lazily with low priority by default', () => {
+    const wrapper = mountItem()
+
+    const img = wrapper.find('img')
+    expect(img.attributes('loading')).toBe('lazy')
+    expect(img.attributes('fetchpriority')).toBe('low')
+  })
+
+  it('loads eagerly with high priority when the eager prop is set', () => {
+    const wrapper = mountItem(buildProps({ eager: true }))
+
+    const img = wrapper.find('img')
+    expect(img.attributes('loading')).toBe('eager')
+    expect(img.attributes('fetchpriority')).toBe('high')
+  })
 })

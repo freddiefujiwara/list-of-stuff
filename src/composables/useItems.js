@@ -31,6 +31,15 @@ export function useItems(apiUrl) {
     return Array.from(new Set(allItems.value.map((item) => item.genre).filter(Boolean)))
   })
 
+  const genreCounts = computed(() => {
+    return Object.fromEntries(
+      genres.value.map((genre) => [
+        genre,
+        allItems.value.filter((item) => item.genre === genre).length,
+      ])
+    )
+  })
+
   const filteredItems = computed(() => {
     return filterByGenre(allItems.value, activeGenre.value)
   })
@@ -73,6 +82,7 @@ export function useItems(apiUrl) {
     clearGenre,
     error,
     filteredItems,
+    genreCounts,
     genres,
     loading,
     toggleGenre,

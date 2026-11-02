@@ -12,6 +12,12 @@ export function filterByGenre(items, genre) {
   return items.filter((item) => item.genre === genre)
 }
 
+export function formatGenreLabel(genre) {
+  const match = /^【(.)】(.+)にまつわる物$/.exec(genre)
+  if (!match) return genre
+  return `${match[1]}・${match[2]}`
+}
+
 export function formatYen(price) {
   if (typeof price !== 'number' || Number.isNaN(price)) return '0円'
   return `${price.toLocaleString('ja-JP')}円`

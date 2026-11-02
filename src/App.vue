@@ -20,28 +20,25 @@
           <span class="h1-name">藤原史和</span><span class="h1-sep" aria-hidden="true">｜</span
           ><span class="h1-role">川口を歩くQAエンジニア</span>
         </h1>
-        <p v-show="!loading && !error" class="hero-stats">全{{ totalCount }}点</p>
       </div>
     </header>
 
     <main class="page">
-      <div class="chips">
+      <p v-show="!loading && !error" class="items-stats">全{{ totalCount }}点</p>
+
+      <div class="genre-filter">
         <button
           v-for="genre in genres"
           :key="genre"
           type="button"
-          class="chip"
+          class="genre-link"
           :class="{ active: activeGenre === genre }"
           @click="toggleGenre(genre)"
         >
-          {{ genre }}
+          <span class="genre-label">{{ formatGenreLabel(genre) }}</span
+          ><span class="genre-count">{{ genreCounts[genre] }}</span>
         </button>
-        <button
-          v-show="activeGenre"
-          type="button"
-          class="btn-clear-filter"
-          @click="clearGenre"
-        >
+        <button v-show="activeGenre" type="button" class="btn-clear-filter" @click="clearGenre">
           フィルタを外す
         </button>
       </div>
@@ -65,6 +62,18 @@
         </div>
       </section>
 
+      <div class="footer-link">
+        <a href="#" @click.prevent="scrollToTop">トップへ戻る</a>
+        &nbsp;|&nbsp;
+        <a
+          href="#"
+          class="copy-link"
+          :class="{ disabled: loading }"
+          @click.prevent="copyToClipboard"
+          >{{ showCopyMessage ? 'コピー完了' : 'コピー' }}</a
+        >
+      </div>
+
       <footer class="site-footer">
         <div class="foot-links">
           <a href="https://freddiefujiwara.com/" target="_blank" rel="noopener">トップ <span class="arr">↗</span></a>
@@ -77,11 +86,6 @@
           <a href="https://github.com/freddiefujiwara" target="_blank" rel="noopener">GitHub <span class="arr">↗</span></a>
           <a href="https://linkedin.com/in/freddiefujiwara" target="_blank" rel="noopener">LinkedIn <span class="arr">↗</span></a>
         </div>
-        <div class="foot-actions">
-          <button type="button" class="btn-copy" :disabled="loading" @click="copyToClipboard">
-            {{ showCopyMessage ? 'コピー完了' : 'コピー' }}
-          </button>
-        </div>
         <p class="copy">© {{ year }} 藤原史和（Fumikazu Fujiwara）— freddiefujiwara.com</p>
       </footer>
     </main>
@@ -93,11 +97,25 @@ import { ref } from 'vue'
 import Item from '@/components/Item.vue'
 import { API_URL } from '@/constants/app'
 import { useItems } from '@/composables/useItems'
+import { formatGenreLabel } from '@/utils/items'
 
-const { activeGenre, clearGenre, error, filteredItems, genres, loading, toggleGenre, totalCount } =
-  useItems(API_URL)
+const {
+  activeGenre,
+  clearGenre,
+  error,
+  filteredItems,
+  genreCounts,
+  genres,
+  loading,
+  toggleGenre,
+  totalCount,
+} = useItems(API_URL)
 
 const year = new Date().getFullYear()
+
+const scrollToTop = () => {
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+}
 
 const showCopyMessage = ref(false)
 const copyToClipboard = async () => {
@@ -309,72 +327,99 @@ const copyToClipboard = async () => {
   margin-top: 10px;
 }
 
-.hero-stats {
-  margin: 12px 0 0;
-  font-size: 0.95rem;
-  color: rgba(253, 251, 247, 0.85);
+.items-stats {
+  margin: 0 0 10px;
+  font-size: 0.85rem;
+  color: var(--ink-3);
 }
 
-.chips {
+.genre-filter {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 6px 20px;
+  align-items: baseline;
 }
 
-.chip,
-.btn-clear-filter {
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  padding: 6px 12px;
-  background: var(--surface);
-  color: var(--ink);
-  font: inherit;
-  font-size: 13.5px;
-  line-height: 1.5;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.chip:hover,
-.btn-clear-filter:hover {
-  border-color: var(--accent);
-  color: var(--accent);
-}
-
-.chip.active {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: #ffffff;
-}
-
-.chip.active:hover {
-  background: var(--accent-strong);
-  border-color: var(--accent-strong);
-  color: #ffffff;
-}
-
-.btn-copy {
-  border: 1px solid var(--accent);
-  border-radius: 999px;
-  padding: 8px 14px;
-  background: transparent;
-  color: var(--accent);
-  cursor: pointer;
+.genre-link {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 4px 0;
+  color: var(--ink-2);
   font: inherit;
   font-size: 14px;
-  font-weight: 600;
-  transition: all 0.2s;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  line-height: 1.5;
+  cursor: pointer;
+  transition: color 0.2s;
 }
 
-.btn-copy:hover:not(:disabled) {
-  background: var(--accent);
-  color: #ffffff;
+.genre-link:hover {
+  color: var(--ink);
 }
 
-.btn-copy:disabled {
-  border-color: var(--line);
+.genre-link.active {
+  color: var(--accent);
+  font-weight: 700;
+  border-bottom-color: var(--accent);
+}
+
+.genre-count {
+  margin-left: 4px;
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0;
   color: var(--ink-3);
-  cursor: not-allowed;
+}
+
+.genre-link.active .genre-count {
+  color: var(--accent);
+}
+
+.btn-clear-filter {
+  margin-left: auto;
+  background: none;
+  border: none;
+  padding: 4px 0;
+  color: var(--ink-3);
+  font: inherit;
+  font-size: 12.5px;
+  line-height: 1.5;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.btn-clear-filter:hover {
+  color: var(--accent);
+}
+
+.footer-link {
+  margin-top: 48px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+  color: var(--ink-2);
+  font-size: 0.9rem;
+}
+
+.footer-link a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.footer-link a:hover {
+  text-decoration: underline;
+}
+
+.copy-link {
+  cursor: pointer;
+}
+
+.copy-link.disabled {
+  opacity: 0.5;
+  cursor: default;
+  pointer-events: none;
 }
 
 .content {
@@ -418,10 +463,6 @@ const copyToClipboard = async () => {
 
 .site-footer .foot-links a:hover {
   color: var(--accent);
-}
-
-.site-footer .foot-actions {
-  margin-bottom: 14px;
 }
 
 .site-footer .copy {

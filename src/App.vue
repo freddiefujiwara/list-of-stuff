@@ -102,6 +102,7 @@ import { API_URL } from '@/constants/app'
 import { useItems } from '@/composables/useItems'
 import { formatGenreLabel } from '@/utils/items'
 import { genreForSlug, pathForGenre, slugFromPath } from '@/utils/genrePath'
+import { trackPageView } from '@/analytics'
 
 const {
   activeGenre,
@@ -123,6 +124,7 @@ const syncUrl = () => {
   const path = pathForGenre(activeGenre.value, base)
   if (window.location.pathname !== path) {
     window.history.pushState(null, '', path)
+    trackPageView(path)
   }
 }
 
@@ -154,12 +156,18 @@ const stopInitialApply = watch(genres, (list) => {
   stopInitialApply()
 })
 
+const handlePopState = () => {
+  applyPathToFilter()
+  trackPageView(window.location.pathname)
+}
+
 onMounted(() => {
-  window.addEventListener('popstate', applyPathToFilter)
+  trackPageView(window.location.pathname)
+  window.addEventListener('popstate', handlePopState)
 })
 
 onUnmounted(() => {
-  window.removeEventListener('popstate', applyPathToFilter)
+  window.removeEventListener('popstate', handlePopState)
 })
 
 const year = new Date().getFullYear()

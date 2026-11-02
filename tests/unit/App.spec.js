@@ -212,6 +212,64 @@ describe('App.vue', async () => {
     vi.useRealTimers()
   })
 
+  it('shows the blog-style hero with the place label and title', async () => {
+    const mockItems = buildItems()
+    mockFetchResolve(mockItems)
+
+    const wrapper = mount(App)
+    await flushPromises()
+
+    expect(wrapper.find('.hero-place').text()).toBe('KAWAGUCHI — LIST OF STUFF')
+    expect(wrapper.find('.hero h1').text()).toBe('持ち物リスト')
+  })
+
+  it('hides the hero stats while loading', () => {
+    localStorage.clear()
+    vi.spyOn(global, 'fetch').mockImplementation(() => new Promise(() => {}))
+
+    const wrapper = mount(App)
+
+    expect(wrapper.find('.hero-stats').element.style.display).toBe('none')
+  })
+
+  it('hides the hero stats when the data fetch fails', async () => {
+    localStorage.clear()
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    mockFetchReject(new Error('API Error'))
+
+    const wrapper = mount(App)
+    await flushPromises()
+
+    expect(wrapper.find('.hero-stats').element.style.display).toBe('none')
+
+    consoleSpy.mockRestore()
+  })
+
+  it('shows the total item count in the hero after a successful fetch', async () => {
+    const mockItems = buildItems()
+    mockFetchResolve(mockItems)
+
+    const wrapper = mount(App)
+    await flushPromises()
+
+    expect(wrapper.find('.hero-stats').element.style.display).toBe('')
+    expect(wrapper.find('.hero-stats').text()).toBe('全3点')
+  })
+
+  it('keeps the hero stats at the total count while a genre filter is active', async () => {
+    const mockItems = buildItems()
+    mockFetchResolve(mockItems)
+
+    const wrapper = mount(App)
+    await flushPromises()
+
+    const genreButton = wrapper.findAll('.chip').find((button) => button.text() === 'Gear')
+    await genreButton.trigger('click')
+
+    expect(wrapper.findAllComponents({ name: 'GearItemCard' }).length).toBe(2)
+    expect(wrapper.find('.hero-stats').text()).toBe('全3点')
+  })
+
   it('logs error when clipboard copy fails', async () => {
     const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
     const mockItems = buildItems()

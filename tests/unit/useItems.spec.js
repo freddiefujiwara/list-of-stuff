@@ -74,6 +74,25 @@ describe('useItems', async () => {
     expect(wrapper.vm.genres).toEqual(['Gear', 'Food'])
   })
 
+  it('exposes the total item count regardless of the active filter', async () => {
+    const items = buildItems()
+    mockFetchResolve(items)
+
+    const wrapper = mount(TestHarness)
+
+    expect(wrapper.vm.totalCount).toBe(0)
+
+    await flushPromises()
+
+    expect(wrapper.vm.totalCount).toBe(3)
+
+    wrapper.vm.toggleGenre('Gear')
+    await nextTick()
+
+    expect(wrapper.vm.filteredItems.length).toBe(2)
+    expect(wrapper.vm.totalCount).toBe(3)
+  })
+
   it('toggles genres and filters items', async () => {
     const items = buildItems()
     mockFetchResolve(items)

@@ -212,7 +212,7 @@ describe('App.vue', async () => {
     vi.useRealTimers()
   })
 
-  it('shows the blog-style hero with the place label and title', async () => {
+  it('shows the blog-style hero with the place label and the blog heading structure', async () => {
     const mockItems = buildItems()
     mockFetchResolve(mockItems)
 
@@ -220,7 +220,12 @@ describe('App.vue', async () => {
     await flushPromises()
 
     expect(wrapper.find('.hero-place').text()).toBe('KAWAGUCHI — LIST OF STUFF')
-    expect(wrapper.find('.hero h1').text()).toBe('持ち物リスト')
+    expect(wrapper.find('.hero h1 .h1-name').text()).toBe('藤原史和')
+    expect(wrapper.find('.hero h1 .h1-role').text()).toBe('川口を歩くQAエンジニア')
+    const sep = wrapper.find('.hero h1 .h1-sep')
+    expect(sep.text()).toBe('｜')
+    expect(sep.attributes('aria-hidden')).toBe('true')
+    expect(wrapper.find('.hero h1').text()).not.toContain('持ち物リスト')
   })
 
   it('hides the hero stats while loading', () => {

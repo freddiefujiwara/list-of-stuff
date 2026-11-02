@@ -16,7 +16,10 @@
     <header class="hero">
       <div class="hero-inner">
         <p class="hero-place">KAWAGUCHI — LIST OF STUFF</p>
-        <h1>持ち物リスト</h1>
+        <h1>
+          <span class="h1-name">藤原史和</span><span class="h1-sep" aria-hidden="true">｜</span
+          ><span class="h1-role">川口を歩くQAエンジニア</span>
+        </h1>
         <p v-show="!loading && !error" class="hero-stats">全{{ totalCount }}点</p>
       </div>
     </header>
@@ -274,13 +277,29 @@ const copyToClipboard = async () => {
   background: #f0764f;
 }
 
-h1 {
+.hero h1 {
   margin: 0;
   font-family: 'Shippori Mincho B1', 'Hiragino Mincho ProN', 'Yu Mincho', serif;
-  font-size: clamp(2rem, 6vw, 2.9rem);
   font-weight: 800;
   letter-spacing: 0.03em;
   line-height: 1.35;
+}
+
+.hero h1 .h1-sep {
+  display: none;
+}
+
+.hero h1 .h1-name {
+  display: block;
+  font-size: clamp(2rem, 6vw, 2.9rem);
+}
+
+.hero h1 .h1-role {
+  display: block;
+  font-size: clamp(1.05rem, 3.4vw, 1.45rem);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  margin-top: 10px;
 }
 
 .hero-stats {

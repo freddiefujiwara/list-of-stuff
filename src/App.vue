@@ -136,9 +136,7 @@ const copyToClipboard = async () => {
   background: var(--bg);
   color: var(--ink);
   -webkit-font-smoothing: antialiased;
-}
-
-:global(a, button) {
+  -webkit-text-size-adjust: 100%;
   touch-action: manipulation;
 }
 

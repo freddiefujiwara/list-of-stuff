@@ -608,3 +608,129 @@ describe('App.vue genre URL routing', () => {
     removeSpy.mockRestore()
   })
 })
+
+describe('App.vue incremental rendering', () => {
+  const buildManyItems = (count, genre = 'Gear') =>
+    Array.from({ length: count }, (_, i) => ({
+      title: `${genre} Item ${i}`,
+      genre,
+      price: 100,
+      image: `item-${genre}-${i}.jpg`,
+      url: 'https://example.com',
+    }))
+
+
+  const sentinelHidden = (wrapper) =>
+    (wrapper.find('.load-more-sentinel').attributes('style') ?? '').includes('display: none')
+
+  let ioCallback
+  let ioInstances
+
+  const stubIntersectionObserver = () => {
+    ioCallback = null
+    ioInstances = []
+    vi.stubGlobal(
+      'IntersectionObserver',
+      class {
+        constructor(callback) {
+          ioCallback = callback
+          this.observe = vi.fn()
+          this.unobserve = vi.fn()
+          this.disconnect = vi.fn()
+          ioInstances.push(this)
+        }
+      },
+    )
+  }
+
+  beforeEach(() => {
+    vi.spyOn(global, 'fetch').mockRestore()
+  })
+
+  afterEach(() => {
+    vi.unstubAllGlobals()
+    localStorage.clear()
+  })
+
+  it('renders the first page and grows when the sentinel intersects', async () => {
+    stubIntersectionObserver()
+    mockFetchResolve(buildManyItems(70))
+
+    const wrapper = mount(App)
+    await flushPromises()
+
+    expect(wrapper.findAllComponents({ name: 'GearItemCard' }).length).toBe(60)
+    expect(sentinelHidden(wrapper)).toBe(false)
+    expect(ioInstances[0].observe).toHaveBeenCalled()
+
+    ioCallback([{ isIntersecting: false }])
+    await flushPromises()
+    expect(wrapper.findAllComponents({ name: 'GearItemCard' }).length).toBe(60)
+
+    ioCallback([{ isIntersecting: true }])
+    await flushPromises()
+    expect(wrapper.findAllComponents({ name: 'GearItemCard' }).length).toBe(70)
+    expect(sentinelHidden(wrapper)).toBe(true)
+
+    wrapper.unmount()
+    expect(ioInstances[0].disconnect).toHaveBeenCalled()
+  })
+
+  it('keeps one observation while the filter hides and shows the sentinel', async () => {
+    stubIntersectionObserver()
+    mockFetchResolve([...buildManyItems(70, 'Gear'), ...buildManyItems(3, 'Food')])
+
+    const wrapper = mount(App)
+    await flushPromises()
+    const instance = ioInstances[0]
+    expect(instance.observe).toHaveBeenCalledTimes(1)
+
+    await findGenreLink(wrapper, 'Food').trigger('click')
+    await flushPromises()
+    expect(wrapper.findAllComponents({ name: 'GearItemCard' }).length).toBe(3)
+    expect(sentinelHidden(wrapper)).toBe(true)
+
+    await findGenreLink(wrapper, 'Food').trigger('click')
+    await flushPromises()
+    expect(sentinelHidden(wrapper)).toBe(false)
+    expect(instance.observe).toHaveBeenCalledTimes(1)
+  })
+
+  it('hides the sentinel when all items fit on the first page', async () => {
+    stubIntersectionObserver()
+    mockFetchResolve(buildItems())
+
+    const wrapper = mount(App)
+    await flushPromises()
+
+    expect(sentinelHidden(wrapper)).toBe(true)
+  })
+
+  it('observes the sentinel at mount when cached items render immediately', async () => {
+    stubIntersectionObserver()
+    const items = buildManyItems(70)
+    localStorage.setItem('list-of-stuff:items:v1', JSON.stringify(items))
+    mockFetchResolve(items)
+
+    const wrapper = mount(App)
+    await flushPromises()
+
+    expect(wrapper.findAllComponents({ name: 'GearItemCard' }).length).toBe(60)
+    expect(ioInstances[0].observe).toHaveBeenCalled()
+  })
+
+  it('renders the first page when IntersectionObserver is unavailable', async () => {
+    mockFetchResolve([...buildManyItems(70, 'Gear'), ...buildManyItems(3, 'Food')])
+
+    const wrapper = mount(App)
+    await flushPromises()
+
+    expect(wrapper.findAllComponents({ name: 'GearItemCard' }).length).toBe(60)
+    expect(sentinelHidden(wrapper)).toBe(false)
+
+    await findGenreLink(wrapper, 'Food').trigger('click')
+    await flushPromises()
+    expect(wrapper.findAllComponents({ name: 'GearItemCard' }).length).toBe(3)
+    expect(sentinelHidden(wrapper)).toBe(true)
+  })
+})

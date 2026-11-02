@@ -1,7 +1,12 @@
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { filterByGenre, shuffleItems } from '@/utils/items'
 import { sortGenres } from '@/utils/genrePath'
 import { ITEMS_CACHE_KEY } from '@/constants/app'
+
+// Items render in pages: mounting every card (and queuing every image)
+// at once makes first paint and scrolling heavy, so the grid starts
+// with one page and grows as the reader scrolls.
+const PAGE_SIZE = 60
 
 const readCachedItems = () => {
   try {
@@ -46,6 +51,28 @@ export function useItems(apiUrl) {
     return filterByGenre(allItems.value, activeGenre.value)
   })
 
+  const visibleCount = ref(PAGE_SIZE)
+
+  const visibleItems = computed(() => {
+    return filteredItems.value.slice(0, visibleCount.value)
+  })
+
+  const hasMore = computed(() => {
+    return visibleCount.value < filteredItems.value.length
+  })
+
+  const loadMore = () => {
+    visibleCount.value = Math.min(
+      visibleCount.value + PAGE_SIZE,
+      filteredItems.value.length,
+    )
+  }
+
+  // A different filter is a new list: start from the first page again.
+  watch(activeGenre, () => {
+    visibleCount.value = PAGE_SIZE
+  })
+
   const totalCount = computed(() => allItems.value.length)
 
   const toggleGenre = (genre) => {
@@ -86,8 +113,11 @@ export function useItems(apiUrl) {
     filteredItems,
     genreCounts,
     genres,
+    hasMore,
     loading,
+    loadMore,
     toggleGenre,
     totalCount,
+    visibleItems,
   }
 }

@@ -74,6 +74,57 @@ describe('useItems', async () => {
     expect(wrapper.vm.genres).toEqual(['Gear', 'Food'])
   })
 
+  it('lists genres in the fixed order regardless of the item order', async () => {
+    mockFetchResolve([
+      { title: 'A', genre: '【健】健康にまつわる物', price: 100 },
+      { title: 'B', genre: '【携】携帯にまつわる物', price: 100 },
+      { title: 'C', genre: '【電】家電にまつわる物', price: 100 },
+      { title: 'D', genre: '【食】キッチンにまつわる物', price: 100 },
+    ])
+
+    const wrapper = mount(TestHarness)
+    await flushPromises()
+
+    expect(wrapper.vm.genres).toEqual([
+      '【電】家電にまつわる物',
+      '【食】キッチンにまつわる物',
+      '【携】携帯にまつわる物',
+      '【健】健康にまつわる物',
+    ])
+  })
+
+  it('produces the same genre order when the payload order differs', async () => {
+    mockFetchResolve([
+      { title: 'A', genre: '【食】キッチンにまつわる物', price: 100 },
+      { title: 'B', genre: '【電】家電にまつわる物', price: 100 },
+      { title: 'C', genre: '【健】健康にまつわる物', price: 100 },
+      { title: 'D', genre: '【携】携帯にまつわる物', price: 100 },
+    ])
+
+    const wrapper = mount(TestHarness)
+    await flushPromises()
+
+    expect(wrapper.vm.genres).toEqual([
+      '【電】家電にまつわる物',
+      '【食】キッチンにまつわる物',
+      '【携】携帯にまつわる物',
+      '【健】健康にまつわる物',
+    ])
+  })
+
+  it('places genres outside the fixed order table after the known genres', async () => {
+    mockFetchResolve([
+      { title: 'A', genre: 'Gear', price: 100 },
+      { title: 'B', genre: '【食】キッチンにまつわる物', price: 100 },
+      { title: 'C', genre: '【電】家電にまつわる物', price: 100 },
+    ])
+
+    const wrapper = mount(TestHarness)
+    await flushPromises()
+
+    expect(wrapper.vm.genres).toEqual(['【電】家電にまつわる物', '【食】キッチンにまつわる物', 'Gear'])
+  })
+
   it('exposes the total item count regardless of the active filter', async () => {
     const items = buildItems()
     mockFetchResolve(items)

@@ -39,3 +39,17 @@ export function pathForGenre(genre, base = '/') {
   const slug = slugForGenre(genre)
   return slug ? `${prefix}${slug}` : prefix
 }
+
+// ジャンルの固定表示順（GENRE_SLUGS の定義順）。
+const GENRE_ORDER = Object.values(GENRE_SLUGS)
+
+// ジャンル一覧を固定表示順に並べ替えた新しい配列を返す。
+// 対応表にあるジャンルは定義順に、対応表にないジャンルは元の出現順のまま末尾に置く。
+// 入力の並びが変わっても、同じジャンルの集合からは常に同じ並びが得られる。
+export function sortGenres(genres) {
+  const rank = (genre) => {
+    const index = GENRE_ORDER.indexOf(slugForGenre(genre))
+    return index === -1 ? GENRE_ORDER.length : index
+  }
+  return [...genres].sort((a, b) => rank(a) - rank(b))
+}

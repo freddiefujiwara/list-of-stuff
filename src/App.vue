@@ -16,7 +16,10 @@
     <header class="hero">
       <div class="hero-inner">
         <p class="hero-place">KAWAGUCHI — LIST OF STUFF</p>
-        <h1>持ち物リスト</h1>
+        <h1>
+          <span class="h1-name">藤原史和</span><span class="h1-sep" aria-hidden="true">｜</span
+          ><span class="h1-role">川口を歩くQAエンジニア</span>
+        </h1>
         <p v-show="!loading && !error" class="hero-stats">全{{ totalCount }}点</p>
       </div>
     </header>
@@ -65,7 +68,14 @@
       <footer class="site-footer">
         <div class="foot-links">
           <a href="https://freddiefujiwara.com/" target="_blank" rel="noopener">トップ <span class="arr">↗</span></a>
-          <a href="https://freddiefujiwara.com/blog/" target="_blank" rel="noopener">ブログ <span class="arr">↗</span></a>
+          <a href="https://www.instagram.com/freddiefujiwara" target="_blank" rel="noopener">Instagram <span class="arr">↗</span></a>
+          <a href="https://www.facebook.com/freddiefujiwara" target="_blank" rel="noopener">Facebook <span class="arr">↗</span></a>
+          <a href="https://www.google.com/maps/contrib/105456242747265663411/reviews" target="_blank" rel="noopener">Googleマップの口コミ <span class="arr">↗</span></a>
+          <a href="https://review.travel.rakuten.co.jp/reviewer/fumikazufujiwara" target="_blank" rel="noopener">楽天トラベルの口コミ <span class="arr">↗</span></a>
+          <a href="https://tabelog.com/rvwr/zegenvs/" target="_blank" rel="noopener">食べログの口コミ <span class="arr">↗</span></a>
+          <a href="https://x.com/freddiefujiwara" target="_blank" rel="noopener">X <span class="arr">↗</span></a>
+          <a href="https://github.com/freddiefujiwara" target="_blank" rel="noopener">GitHub <span class="arr">↗</span></a>
+          <a href="https://linkedin.com/in/freddiefujiwara" target="_blank" rel="noopener">LinkedIn <span class="arr">↗</span></a>
         </div>
         <div class="foot-actions">
           <button type="button" class="btn-copy" :disabled="loading" @click="copyToClipboard">
@@ -274,13 +284,29 @@ const copyToClipboard = async () => {
   background: #f0764f;
 }
 
-h1 {
+.hero h1 {
   margin: 0;
   font-family: 'Shippori Mincho B1', 'Hiragino Mincho ProN', 'Yu Mincho', serif;
-  font-size: clamp(2rem, 6vw, 2.9rem);
   font-weight: 800;
   letter-spacing: 0.03em;
   line-height: 1.35;
+}
+
+.hero h1 .h1-sep {
+  display: none;
+}
+
+.hero h1 .h1-name {
+  display: block;
+  font-size: clamp(2rem, 6vw, 2.9rem);
+}
+
+.hero h1 .h1-role {
+  display: block;
+  font-size: clamp(1.05rem, 3.4vw, 1.45rem);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  margin-top: 10px;
 }
 
 .hero-stats {
@@ -299,10 +325,12 @@ h1 {
 .btn-clear-filter {
   border: 1px solid var(--line);
   border-radius: 999px;
-  padding: 8px 14px;
+  padding: 6px 12px;
   background: var(--surface);
   color: var(--ink);
   font: inherit;
+  font-size: 13.5px;
+  line-height: 1.5;
   cursor: pointer;
   transition: all 0.2s;
 }

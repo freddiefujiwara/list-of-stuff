@@ -1,5 +1,5 @@
 import { mount, flushPromises } from '@vue/test-utils'
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import App from '../../src/App.vue'
 
 // Mock the item utils with named exports
@@ -399,5 +399,162 @@ describe('App.vue', async () => {
 
     expect(consoleSpy).toHaveBeenCalledWith('Failed to copy:', expect.any(Error))
     consoleSpy.mockRestore()
+  })
+})
+
+describe('App.vue genre URL routing', () => {
+  const jpItems = () => [
+    { title: 'A', genre: '【電】家電にまつわる物', price: 1000, image: 'a.jpg', url: 'https://a.com' },
+    { title: 'B', genre: '【食】キッチンにまつわる物', price: 2500, image: 'b.jpg', url: 'https://b.com' },
+    { title: 'C', genre: '【電】家電にまつわる物', price: 4200, image: 'c.jpg', url: 'https://c.com' },
+  ]
+
+  beforeEach(() => {
+    vi.spyOn(global, 'fetch').mockRestore()
+    localStorage.clear()
+    window.history.pushState(null, '', '/')
+  })
+
+  afterEach(() => {
+    window.history.pushState(null, '', '/')
+  })
+
+  it('applies the genre filter from the URL slug on load', async () => {
+    window.history.pushState(null, '', '/electronics')
+    mockFetchResolve(jpItems())
+
+    const wrapper = mount(App)
+    await flushPromises()
+
+    expect(wrapper.findAllComponents({ name: 'GearItemCard' }).length).toBe(2)
+    expect(findGenreLink(wrapper, '電・家電').classes()).toContain('active')
+    expect(findGenreLink(wrapper, '食・キッチン').classes()).not.toContain('active')
+    wrapper.unmount()
+  })
+
+  it('ignores an unknown slug on load', async () => {
+    window.history.pushState(null, '', '/unknown')
+    mockFetchResolve(jpItems())
+
+    const wrapper = mount(App)
+    await flushPromises()
+
+    expect(wrapper.findAllComponents({ name: 'GearItemCard' }).length).toBe(3)
+    expect(wrapper.find('.genre-link.active').exists()).toBe(false)
+    wrapper.unmount()
+  })
+
+  it('ignores a slug whose genre is not in the loaded data', async () => {
+    window.history.pushState(null, '', '/electronics')
+    mockFetchResolve([
+      { title: 'B', genre: '【食】キッチンにまつわる物', price: 2500, image: 'b.jpg', url: 'https://b.com' },
+    ])
+
+    const wrapper = mount(App)
+    await flushPromises()
+
+    expect(wrapper.findAllComponents({ name: 'GearItemCard' }).length).toBe(1)
+    expect(wrapper.find('.genre-link.active').exists()).toBe(false)
+    wrapper.unmount()
+  })
+
+  it('shows no items and no filter when the loaded data is empty', async () => {
+    window.history.pushState(null, '', '/electronics')
+    mockFetchResolve([])
+
+    const wrapper = mount(App)
+    await flushPromises()
+
+    expect(wrapper.findAllComponents({ name: 'GearItemCard' }).length).toBe(0)
+    expect(wrapper.find('.items-stats').text()).toBe('全0点')
+    wrapper.unmount()
+  })
+
+  it('pushes the genre path when a genre link is clicked and the base path when toggled off', async () => {
+    mockFetchResolve(jpItems())
+
+    const wrapper = mount(App)
+    await flushPromises()
+
+    const genreButton = findGenreLink(wrapper, '電・家電')
+    await genreButton.trigger('click')
+
+    expect(window.location.pathname).toBe('/electronics')
+    expect(wrapper.findAllComponents({ name: 'GearItemCard' }).length).toBe(2)
+
+    await genreButton.trigger('click')
+
+    expect(window.location.pathname).toBe('/')
+    expect(wrapper.findAllComponents({ name: 'GearItemCard' }).length).toBe(3)
+    wrapper.unmount()
+  })
+
+  it('returns the URL to the base path when the clear filter button is clicked', async () => {
+    mockFetchResolve(jpItems())
+
+    const wrapper = mount(App)
+    await flushPromises()
+
+    await findGenreLink(wrapper, '電・家電').trigger('click')
+    expect(window.location.pathname).toBe('/electronics')
+
+    await wrapper.find('.btn-clear-filter').trigger('click')
+
+    expect(window.location.pathname).toBe('/')
+    expect(wrapper.findAllComponents({ name: 'GearItemCard' }).length).toBe(3)
+    wrapper.unmount()
+  })
+
+  it('leaves the URL unchanged for genres that have no path', async () => {
+    mockFetchResolve(buildItems())
+
+    const wrapper = mount(App)
+    await flushPromises()
+
+    await findGenreLink(wrapper, 'Gear').trigger('click')
+
+    expect(window.location.pathname).toBe('/')
+    expect(wrapper.findAllComponents({ name: 'GearItemCard' }).length).toBe(2)
+    wrapper.unmount()
+  })
+
+  it('follows the URL on popstate in both directions', async () => {
+    mockFetchResolve(jpItems())
+
+    const wrapper = mount(App)
+    await flushPromises()
+    expect(wrapper.findAllComponents({ name: 'GearItemCard' }).length).toBe(3)
+
+    window.history.pushState(null, '', '/kitchen')
+    window.dispatchEvent(new Event('popstate'))
+    await wrapper.vm.$nextTick()
+
+    expect(wrapper.findAllComponents({ name: 'GearItemCard' }).length).toBe(1)
+    expect(findGenreLink(wrapper, '食・キッチン').classes()).toContain('active')
+
+    // A repeated popstate for the already-active genre keeps the filter.
+    window.dispatchEvent(new Event('popstate'))
+    await wrapper.vm.$nextTick()
+    expect(wrapper.findAllComponents({ name: 'GearItemCard' }).length).toBe(1)
+
+    window.history.pushState(null, '', '/')
+    window.dispatchEvent(new Event('popstate'))
+    await wrapper.vm.$nextTick()
+
+    expect(wrapper.findAllComponents({ name: 'GearItemCard' }).length).toBe(3)
+    expect(wrapper.find('.genre-link.active').exists()).toBe(false)
+    wrapper.unmount()
+  })
+
+  it('removes the popstate listener when unmounted', async () => {
+    const removeSpy = vi.spyOn(window, 'removeEventListener')
+    mockFetchResolve(jpItems())
+
+    const wrapper = mount(App)
+    await flushPromises()
+    wrapper.unmount()
+
+    expect(removeSpy).toHaveBeenCalledWith('popstate', expect.any(Function))
+    removeSpy.mockRestore()
   })
 })

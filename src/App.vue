@@ -33,12 +33,12 @@
           type="button"
           class="genre-link"
           :class="{ active: activeGenre === genre }"
-          @click="toggleGenre(genre)"
+          @click="handleToggleGenre(genre)"
         >
           <span class="genre-label">{{ formatGenreLabel(genre) }}</span
           ><span class="genre-count">{{ genreCounts[genre] }}</span>
         </button>
-        <button v-show="activeGenre" type="button" class="btn-clear-filter" @click="clearGenre">
+        <button v-show="activeGenre" type="button" class="btn-clear-filter" @click="handleClearGenre">
           フィルタを外す
         </button>
       </div>
@@ -57,7 +57,7 @@
             :title="item.title"
             :unit="item.unit"
             :url="item.url"
-            @filter="toggleGenre"
+            @filter="handleToggleGenre"
           />
         </div>
       </section>
@@ -93,11 +93,12 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { onMounted, onUnmounted, ref, watch } from 'vue'
 import Item from '@/components/Item.vue'
 import { API_URL } from '@/constants/app'
 import { useItems } from '@/composables/useItems'
 import { formatGenreLabel } from '@/utils/items'
+import { genreForSlug, pathForGenre, slugFromPath } from '@/utils/genrePath'
 
 const {
   activeGenre,
@@ -110,6 +111,53 @@ const {
   toggleGenre,
   totalCount,
 } = useItems(API_URL)
+
+// ジャンルフィルタとURLパスを同期する（共有用URL）。
+// パスを持つジャンルは /list-of-stuff/<slug>、それ以外と未選択はベースに戻す。
+const base = import.meta.env.BASE_URL
+
+const syncUrl = () => {
+  const path = pathForGenre(activeGenre.value, base)
+  if (window.location.pathname !== path) {
+    window.history.pushState(null, '', path)
+  }
+}
+
+const handleToggleGenre = (genre) => {
+  toggleGenre(genre)
+  syncUrl()
+}
+
+const handleClearGenre = () => {
+  clearGenre()
+  syncUrl()
+}
+
+// URL側のパスをフィルタに反映する（履歴は積まない）。
+const applyPathToFilter = () => {
+  const genre = genreForSlug(genres.value, slugFromPath(window.location.pathname, base))
+  if (genre === activeGenre.value) return
+  if (genre) {
+    toggleGenre(genre)
+  } else {
+    clearGenre()
+  }
+}
+
+// 初回はデータ読み込みでジャンルが揃った時点で、パスのフィルタを一度だけ適用する。
+const stopInitialApply = watch(genres, (list) => {
+  if (!list.length) return
+  applyPathToFilter()
+  stopInitialApply()
+})
+
+onMounted(() => {
+  window.addEventListener('popstate', applyPathToFilter)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('popstate', applyPathToFilter)
+})
 
 const year = new Date().getFullYear()
 
@@ -161,11 +209,6 @@ const copyToClipboard = async () => {
     --accent-soft: #33231b;
     --error: #fca5a5;
   }
-}
-
-:global(html) {
-  /* スクロールバーの有無で本文幅が変わらないよう、溝を常時確保する */
-  scrollbar-gutter: stable;
 }
 
 :global(body) {

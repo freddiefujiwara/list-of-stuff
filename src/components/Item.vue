@@ -13,12 +13,12 @@
     <div class="card-body">
       <div class="meta">
         <button type="button" class="chip" @click="emitFilter">
-          {{ genre }}
+          {{ genreLabel }}
         </button>
-        <span class="price">{{ priceLabel }}</span>
+        <span class="price">{{ priceLabel }}<span class="unit">{{ unitLabel }}</span></span>
       </div>
-      <a :href="url" class="title" target="_blank" rel="noopener">{{ title }}</a>
-      <p class="comment">{{ comment }}</p>
+      <a :href="url" class="title" :title="title" target="_blank" rel="noopener">{{ title }}</a>
+      <p v-show="commentText" class="comment">{{ commentText }}</p>
     </div>
   </article>
 </template>
@@ -26,7 +26,7 @@
 <script setup>
 import { computed } from 'vue'
 import { FALLBACK_IMAGE_URL } from '@/constants/app'
-import { formatYen } from '@/utils/items'
+import { formatGenreLabel, formatYen } from '@/utils/items'
 defineOptions({ name: 'GearItemCard' })
 
 const props = defineProps({
@@ -56,6 +56,13 @@ const resolvedImage = computed(() => {
   return candidate ? candidate : FALLBACK_IMAGE_URL
 })
 const priceLabel = computed(() => formatYen(props.price))
+const genreLabel = computed(() => formatGenreLabel(props.genre ?? ''))
+const commentText = computed(() =>
+  typeof props.comment === 'string' ? props.comment.trim() : '',
+)
+const unitLabel = computed(() =>
+  typeof props.unit === 'number' && props.unit > 1 ? ` ×${props.unit}` : '',
+)
 const emit = defineEmits(['filter'])
 
 const emitFilter = () => {
@@ -108,9 +115,10 @@ const handleImageError = (event) => {
 }
 
 .card-body {
-  padding: 0 16px 16px;
+  padding: 2px 16px 16px;
   display: grid;
   gap: 8px;
+  align-content: start;
 }
 
 .meta {
@@ -123,11 +131,12 @@ const handleImageError = (event) => {
   border: none;
   background: var(--accent-soft);
   color: var(--accent-strong);
-  padding: 6px 12px;
+  padding: 4px 10px;
   border-radius: 999px;
   font: inherit;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   font-weight: 600;
+  letter-spacing: 0.04em;
   cursor: pointer;
   touch-action: manipulation;
   transition: all 0.2s;
@@ -140,14 +149,28 @@ const handleImageError = (event) => {
 
 .price {
   font-weight: 700;
+  font-size: 0.95rem;
   color: var(--ink);
+  white-space: nowrap;
+}
+
+.unit {
+  font-weight: 400;
+  font-size: 0.85rem;
+  color: var(--ink-2);
 }
 
 .title {
-  font-size: 16px;
+  font-size: 15.5px;
   font-weight: 700;
+  line-height: 1.55;
   color: var(--ink);
   text-decoration: none;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: calc(15.5px * 1.55 * 2);
 }
 
 .title:hover {
@@ -159,6 +182,11 @@ const handleImageError = (event) => {
 .comment {
   margin: 0;
   color: var(--ink-2);
+  font-size: 0.9rem;
   line-height: 1.7;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 </style>

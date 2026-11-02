@@ -14,13 +14,13 @@
     </nav>
 
     <header class="hero">
-      <div class="hero-inner">
+      <a class="hero-inner" :href="base" @click.prevent="handleClearGenre">
         <p class="hero-place">KAWAGUCHI — LIST OF STUFF</p>
         <h1>
           <span class="h1-name">藤原史和</span><span class="h1-sep" aria-hidden="true">｜</span
           ><span class="h1-role">川口を歩くQAエンジニア</span>
         </h1>
-      </div>
+      </a>
     </header>
 
     <main class="page">
@@ -331,6 +331,12 @@ const copyToClipboard = async () => {
   max-width: 820px;
   margin: 0 auto;
   padding: 96px 20px 36px;
+}
+
+a.hero-inner {
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
 }
 
 .hero-place {

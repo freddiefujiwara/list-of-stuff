@@ -129,6 +129,7 @@ const handleImageError = (event) => {
   font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
+  touch-action: manipulation;
   transition: all 0.2s;
 }
 

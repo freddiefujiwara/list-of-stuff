@@ -228,6 +228,44 @@ describe('App.vue', async () => {
     expect(wrapper.find('.hero h1').text()).not.toContain('持ち物リスト')
   })
 
+  it('shows the same footer links as the blog', async () => {
+    const mockItems = buildItems()
+    mockFetchResolve(mockItems)
+
+    const wrapper = mount(App)
+    await flushPromises()
+
+    const links = wrapper.findAll('.site-footer .foot-links a')
+    expect(links.map((link) => link.attributes('href'))).toEqual([
+      'https://freddiefujiwara.com/',
+      'https://www.instagram.com/freddiefujiwara',
+      'https://www.facebook.com/freddiefujiwara',
+      'https://www.google.com/maps/contrib/105456242747265663411/reviews',
+      'https://review.travel.rakuten.co.jp/reviewer/fumikazufujiwara',
+      'https://tabelog.com/rvwr/zegenvs/',
+      'https://x.com/freddiefujiwara',
+      'https://github.com/freddiefujiwara',
+      'https://linkedin.com/in/freddiefujiwara',
+    ])
+    expect(links.map((link) => link.text())).toEqual([
+      'トップ ↗',
+      'Instagram ↗',
+      'Facebook ↗',
+      'Googleマップの口コミ ↗',
+      '楽天トラベルの口コミ ↗',
+      '食べログの口コミ ↗',
+      'X ↗',
+      'GitHub ↗',
+      'LinkedIn ↗',
+    ])
+    for (const link of links) {
+      expect(link.attributes('target')).toBe('_blank')
+      expect(link.attributes('rel')).toBe('noopener')
+    }
+    // The copy button stays between the links and the copyright line.
+    expect(wrapper.find('.site-footer .foot-actions .btn-copy').exists()).toBe(true)
+  })
+
   it('hides the hero stats while loading', () => {
     localStorage.clear()
     vi.spyOn(global, 'fetch').mockImplementation(() => new Promise(() => {}))

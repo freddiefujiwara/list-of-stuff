@@ -39,6 +39,10 @@ export function useItems(apiUrl) {
     activeGenre.value = activeGenre.value === genre ? '' : genre
   }
 
+  const clearGenre = () => {
+    activeGenre.value = ''
+  }
+
   const loadItems = async () => {
     const cachedItems = readCachedItems()
     if (cachedItems) {
@@ -64,6 +68,7 @@ export function useItems(apiUrl) {
 
   return {
     activeGenre,
+    clearGenre,
     error,
     filteredItems,
     genres,

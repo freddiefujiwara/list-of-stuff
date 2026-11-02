@@ -98,6 +98,48 @@ describe('App.vue', async () => {
     expect(wrapper.findAllComponents({ name: 'GearItemCard' }).length).toBe(mockItems.length)
   })
 
+  it('places the copy button in the footer instead of the chips row', async () => {
+    const mockItems = buildItems()
+    mockFetchResolve(mockItems)
+
+    const wrapper = mount(App)
+    await flushPromises()
+
+    expect(wrapper.find('.chips .btn-copy').exists()).toBe(false)
+    expect(wrapper.find('.site-footer .btn-copy').exists()).toBe(true)
+  })
+
+  it('does not show the clear filter button when no genre is selected', async () => {
+    const mockItems = buildItems()
+    mockFetchResolve(mockItems)
+
+    const wrapper = mount(App)
+    await flushPromises()
+
+    expect(wrapper.find('.btn-clear-filter').element.style.display).toBe('none')
+  })
+
+  it('shows the clear filter button while filtering and clears the filter when clicked', async () => {
+    const mockItems = buildItems()
+    mockFetchResolve(mockItems)
+
+    const wrapper = mount(App)
+    await flushPromises()
+
+    const genreButton = wrapper.findAll('.chip').find((button) => button.text() === 'Gear')
+    await genreButton.trigger('click')
+
+    expect(wrapper.findAllComponents({ name: 'GearItemCard' }).length).toBe(2)
+    const clearButton = wrapper.find('.chips .btn-clear-filter')
+    expect(clearButton.element.style.display).toBe('')
+    expect(clearButton.text()).toBe('フィルタを外す')
+
+    await clearButton.trigger('click')
+
+    expect(wrapper.findAllComponents({ name: 'GearItemCard' }).length).toBe(mockItems.length)
+    expect(wrapper.find('.btn-clear-filter').element.style.display).toBe('none')
+  })
+
   it('copies filtered items to clipboard (excluding image and url) when copy button is clicked', async () => {
     const mockItems = buildItems()
     mockFetchResolve(mockItems)
@@ -117,6 +159,31 @@ describe('App.vue', async () => {
     const expectedData = mockItems.map(({ image, url, ...rest }) => rest)
     expect(writeTextSpy).toHaveBeenCalledWith(JSON.stringify(expectedData, null, 2))
     expect(wrapper.text()).toContain('コピー完了')
+  })
+
+  it('copies only the filtered items when a genre filter is active', async () => {
+    const mockItems = buildItems()
+    mockFetchResolve(mockItems)
+    const writeTextSpy = vi.fn().mockResolvedValue()
+    Object.assign(navigator, {
+      clipboard: {
+        writeText: writeTextSpy,
+      },
+    })
+
+    const wrapper = mount(App)
+    await flushPromises()
+
+    const genreButton = wrapper.findAll('.chip').find((button) => button.text() === 'Gear')
+    await genreButton.trigger('click')
+
+    const copyButton = wrapper.find('.site-footer .btn-copy')
+    await copyButton.trigger('click')
+
+    const expectedData = mockItems
+      .filter((item) => item.genre === 'Gear')
+      .map(({ image, url, ...rest }) => rest)
+    expect(writeTextSpy).toHaveBeenCalledWith(JSON.stringify(expectedData, null, 2))
   })
 
   it('shows copy completion message temporarily', async () => {

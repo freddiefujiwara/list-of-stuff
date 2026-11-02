@@ -211,6 +211,11 @@ const copyToClipboard = async () => {
   }
 }
 
+:global(*) {
+  /* 幅計算の基準をブログ／トップと揃える（padding を幅に含める） */
+  box-sizing: border-box;
+}
+
 :global(html) {
   /* スクロールバーの有無で本文幅が変わらないよう、溝を常時確保する */
   scrollbar-gutter: stable;

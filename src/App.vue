@@ -129,6 +129,10 @@ const copyToClipboard = async () => {
   -webkit-font-smoothing: antialiased;
 }
 
+:global(a, button) {
+  touch-action: manipulation;
+}
+
 .site-nav {
   position: sticky;
   top: 0;

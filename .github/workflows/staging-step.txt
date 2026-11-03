@@ -1,0 +1,8 @@
+      - name: Build staging variant into dist/staging
+        env:
+          VITE_ITEMS_API: "https://script.google.com/macros/s/AKfycbwtdRN75mh4OlKQXM_JQlIRoO7OdB4BxtATgsnD0tnTUT2B02HUewbsd2cecycmUi1f/exec"
+          VITE_STAGING: "1"
+        run: |
+          npm run build:staging
+          mkdir -p dist/staging
+          cp -r dist-staging/* dist/staging/

@@ -1,7 +1,9 @@
 import { createApp } from 'vue'
 import App from './App.vue'
-import { showStagingBanner } from './staging-banner.js'
+import { isStagingBuild, showStagingBanner } from './staging-banner.js'
 
 createApp(App)
   .mount('#app')
-showStagingBanner()
+if (isStagingBuild()) {
+  showStagingBanner()
+}

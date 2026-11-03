@@ -3,7 +3,6 @@ import {
   filterByGenre,
   formatGenreLabel,
   formatYen,
-  rakutenThumbnailUrl,
   shuffleItems,
 } from '../../src/utils/items'
 
@@ -60,39 +59,4 @@ describe('item helpers', () => {
     )
   })
 
-  describe('rakutenThumbnailUrl', () => {
-    it('adds a resize query to tshop image URLs', () => {
-      expect(
-        rakutenThumbnailUrl('https://tshop.r10s.jp/shop/cabinet/item.jpg'),
-      ).toBe('https://tshop.r10s.jp/shop/cabinet/item.jpg?_ex=400x400')
-    })
-
-    it('adds a resize query to shop.r10s.jp image URLs', () => {
-      expect(
-        rakutenThumbnailUrl('https://shop.r10s.jp/shop/cabinet/item.jpg'),
-      ).toBe('https://shop.r10s.jp/shop/cabinet/item.jpg?_ex=400x400')
-    })
-
-    it('honours an explicit size', () => {
-      expect(
-        rakutenThumbnailUrl('https://tshop.r10s.jp/shop/cabinet/item.jpg', 200),
-      ).toBe('https://tshop.r10s.jp/shop/cabinet/item.jpg?_ex=200x200')
-    })
-
-    it('leaves other hosts unchanged', () => {
-      expect(rakutenThumbnailUrl('https://example.com/image.jpg')).toBe(
-        'https://example.com/image.jpg',
-      )
-    })
-
-    it('leaves URLs that already have a query string unchanged', () => {
-      const url = 'https://tshop.r10s.jp/shop/cabinet/item.jpg?_ex=100x100'
-      expect(rakutenThumbnailUrl(url)).toBe(url)
-    })
-
-    it('leaves non-string values unchanged', () => {
-      expect(rakutenThumbnailUrl(null)).toBeNull()
-      expect(rakutenThumbnailUrl(undefined)).toBeUndefined()
-    })
-  })
 })

@@ -26,7 +26,7 @@
 <script setup>
 import { computed } from 'vue'
 import { FALLBACK_IMAGE_URL } from '@/constants/app'
-import { formatGenreLabel, formatYen, rakutenThumbnailUrl } from '@/utils/items'
+import { formatGenreLabel, formatYen } from '@/utils/items'
 defineOptions({ name: 'GearItemCard' })
 
 const props = defineProps({
@@ -57,7 +57,7 @@ const props = defineProps({
 
 const resolvedImage = computed(() => {
   const candidate = typeof props.image === 'string' ? props.image.trim() : ''
-  return candidate ? rakutenThumbnailUrl(candidate) : FALLBACK_IMAGE_URL
+  return candidate ? candidate : FALLBACK_IMAGE_URL
 })
 const priceLabel = computed(() => formatYen(props.price))
 const genreLabel = computed(() => formatGenreLabel(props.genre ?? ''))

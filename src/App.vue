@@ -1,15 +1,15 @@
 <template>
   <div>
     <nav class="site-nav">
-      <a class="brand" href="https://freddiefujiwara.com/">藤原史和｜川口を歩くQAエンジニア</a>
+      <a class="brand" href="https://freddiefujiwara.com/" target="_blank" rel="noopener">藤原史和｜川口を歩くQAエンジニア</a>
       <ul>
-        <li><a href="https://freddiefujiwara.com/">トップ</a></li>
-        <li><a href="https://freddiefujiwara.com/#about">プロフィール</a></li>
-        <li><a href="https://freddiefujiwara.com/#activity">活動・発信</a></li>
-        <li><a href="https://freddiefujiwara.com/#contact">情報交換</a></li>
-        <li><a href="https://freddiefujiwara.com/blog/">ブログ</a></li>
+        <li><a href="https://freddiefujiwara.com/" target="_blank" rel="noopener">トップ</a></li>
+        <li><a href="https://freddiefujiwara.com/#about" target="_blank" rel="noopener">プロフィール</a></li>
+        <li><a href="https://freddiefujiwara.com/#activity" target="_blank" rel="noopener">活動・発信</a></li>
+        <li><a href="https://freddiefujiwara.com/#contact" target="_blank" rel="noopener">情報交換</a></li>
+        <li><a href="https://freddiefujiwara.com/blog/" target="_blank" rel="noopener">ブログ</a></li>
         <li>
-          <a href="https://freddiefujiwara.com/list-of-stuff/" class="active" aria-current="page">持ち物</a>
+          <a href="https://freddiefujiwara.com/list-of-stuff/" class="active" aria-current="page" target="_blank" rel="noopener">持ち物</a>
         </li>
       </ul>
     </nav>

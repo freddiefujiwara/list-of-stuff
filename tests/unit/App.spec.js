@@ -338,6 +338,21 @@ describe('App.vue', async () => {
     expect(wrapper.find('.site-footer .btn-copy').exists()).toBe(false)
   })
 
+  it('opens every header nav link in a new tab, like the footer', async () => {
+    localStorage.clear()
+    vi.spyOn(global, 'fetch').mockImplementation(() => new Promise(() => {}))
+
+    const wrapper = mount(App)
+    await flushPromises()
+
+    const links = wrapper.findAll('.site-nav a')
+    expect(links.length).toBeGreaterThan(0)
+    for (const link of links) {
+      expect(link.attributes('target')).toBe('_blank')
+      expect(link.attributes('rel')).toBe('noopener')
+    }
+  })
+
   it('hides the item count while loading', () => {
     localStorage.clear()
     vi.spyOn(global, 'fetch').mockImplementation(() => new Promise(() => {}))

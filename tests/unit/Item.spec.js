@@ -158,14 +158,11 @@ describe('Item.vue', () => {
     expect(img.attributes('src')).toBe('https://tshop.r10s.jp/rukusu/cabinet/images/junbi.jpg')
   })
 
-  it('requests a resized thumbnail for Rakuten images', () => {
-    const wrapper = mountItem(
-      buildProps({ image: 'https://tshop.r10s.jp/shop/cabinet/item.jpg' }),
-    )
+  it('uses the image URL exactly as provided', () => {
+    const image = 'https://tshop.r10s.jp/shop/cabinet/item.jpg?_ex=400x400'
+    const wrapper = mountItem(buildProps({ image }))
 
-    expect(wrapper.find('img').attributes('src')).toBe(
-      'https://tshop.r10s.jp/shop/cabinet/item.jpg?_ex=400x400',
-    )
+    expect(wrapper.find('img').attributes('src')).toBe(image)
   })
 
   it('loads images lazily with low priority by default', () => {

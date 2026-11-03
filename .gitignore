@@ -27,3 +27,5 @@ serve.log
 .codex/
 .gemini/
 .github/skills/
+
+dist-staging

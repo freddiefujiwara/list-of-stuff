@@ -34,6 +34,12 @@ jobs:
       - name: Run tests
         run: npm test
 
+      - name: Inject API secret
+        run: sed -i -e 's@<API>@${{ secrets.API }}@g' src/constants/app.js
+
+      - name: Build
+        run: npm run build --if-present
+
       - name: Build staging variant into dist/staging
         env:
           VITE_ITEMS_API: "https://script.google.com/macros/s/AKfycbwtdRN75mh4OlKQXM_JQlIRoO7OdB4BxtATgsnD0tnTUT2B02HUewbsd2cecycmUi1f/exec"
@@ -42,12 +48,6 @@ jobs:
           npm run build:staging
           mkdir -p dist/staging
           cp -r dist-staging/* dist/staging/
-
-      - name: Inject API secret
-        run: sed -i -e 's@<API>@${{ secrets.API }}@g' src/constants/app.js
-
-      - name: Build
-        run: npm run build --if-present
 
       - name: "Deploy to gh-pages 🚀"
         uses: JamesIves/github-pages-deploy-action@releases/v3

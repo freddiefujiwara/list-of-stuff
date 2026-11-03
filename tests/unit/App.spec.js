@@ -329,7 +329,13 @@ describe('App.vue', async () => {
       'GitHub ↗',
       'LinkedIn ↗',
     ])
-    for (const link of links) {
+    // Same-site links stay in the same tab so visitors can move
+    // around the site; only links that leave the site open in a
+    // new tab.
+    for (const link of links.slice(0, 3)) {
+      expect(link.attributes('target')).toBeUndefined()
+    }
+    for (const link of links.slice(3)) {
       expect(link.attributes('target')).toBe('_blank')
       expect(link.attributes('rel')).toBe('noopener')
     }
@@ -338,7 +344,7 @@ describe('App.vue', async () => {
     expect(wrapper.find('.site-footer .btn-copy').exists()).toBe(false)
   })
 
-  it('opens every header nav link in a new tab, like the footer', async () => {
+  it('keeps every header nav link in the same tab (same site)', async () => {
     localStorage.clear()
     vi.spyOn(global, 'fetch').mockImplementation(() => new Promise(() => {}))
 
@@ -348,8 +354,7 @@ describe('App.vue', async () => {
     const links = wrapper.findAll('.site-nav a')
     expect(links.length).toBeGreaterThan(0)
     for (const link of links) {
-      expect(link.attributes('target')).toBe('_blank')
-      expect(link.attributes('rel')).toBe('noopener')
+      expect(link.attributes('target')).toBeUndefined()
     }
   })
 

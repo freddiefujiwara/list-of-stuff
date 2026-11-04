@@ -280,9 +280,9 @@ const copyToClipboard = async () => {
   position: sticky;
   top: 0;
   z-index: 50;
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: space-between;
   padding: 0 clamp(16px, 4vw, 40px);
   height: 56px;
   background: color-mix(in srgb, var(--bg) 86%, transparent);
@@ -292,6 +292,7 @@ const copyToClipboard = async () => {
 }
 
 .site-nav .brand {
+  justify-self: start;
   font-family: 'Shippori Mincho B1', 'Hiragino Mincho ProN', 'Yu Mincho', serif;
   font-weight: 700;
   font-size: 15px;
@@ -302,6 +303,7 @@ const copyToClipboard = async () => {
 }
 
 .site-nav ul {
+  justify-self: center;
   display: flex;
   gap: clamp(14px, 3vw, 30px);
   list-style: none;
@@ -331,7 +333,7 @@ const copyToClipboard = async () => {
 
 @media (max-width: 560px) {
   .site-nav {
-    justify-content: center;
+    grid-template-columns: 1fr;
   }
 
   .site-nav .brand {
@@ -339,6 +341,7 @@ const copyToClipboard = async () => {
   }
 
   .site-nav ul {
+    justify-self: stretch;
     width: 100%;
     justify-content: space-between;
     gap: 6px;

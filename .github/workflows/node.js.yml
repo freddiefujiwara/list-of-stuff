@@ -57,7 +57,7 @@ jobs:
 
       - name: "Deploy to gh-pages 🚀"
         uses: JamesIves/github-pages-deploy-action@releases/v3
-        if: ${{ matrix.node-version == '22.x' }}
+        if: ${{ matrix.node-version == '22.x' && github.event_name == 'push' }}
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BRANCH: gh-pages

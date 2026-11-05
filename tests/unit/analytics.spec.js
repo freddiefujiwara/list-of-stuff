@@ -4,6 +4,7 @@ import { trackPageView, GA_MEASUREMENT_ID } from '../../src/analytics'
 describe('analytics (GA4 page-view tracking)', () => {
   afterEach(() => {
     delete window.gtag
+    vi.unstubAllEnvs()
   })
 
   it('uses the freddiefujiwara.com measurement ID', () => {
@@ -22,6 +23,13 @@ describe('analytics (GA4 page-view tracking)', () => {
 
   it('does nothing when gtag is not loaded', () => {
     expect(() => trackPageView('/x')).not.toThrow()
+  })
+
+  it('does not send a page_view on staging builds', () => {
+    vi.stubEnv('VITE_STAGING', '1')
+    window.gtag = vi.fn()
+    trackPageView('/list-of-stuff/living')
+    expect(window.gtag).not.toHaveBeenCalled()
   })
 })
 

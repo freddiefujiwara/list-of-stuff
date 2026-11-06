@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from 'vitest'
-import { trackPageView, GA_MEASUREMENT_ID } from '../../src/analytics'
+import { trackPageView, trackNavClick, GA_MEASUREMENT_ID } from '../../src/analytics'
 
 describe('analytics (GA4 page-view tracking)', () => {
   afterEach(() => {
@@ -29,6 +29,26 @@ describe('analytics (GA4 page-view tracking)', () => {
     vi.stubEnv('VITE_STAGING', '1')
     window.gtag = vi.fn()
     trackPageView('/list-of-stuff/living')
+    expect(window.gtag).not.toHaveBeenCalled()
+  })
+
+  it('sends a nav_click event with the nav item', () => {
+    window.gtag = vi.fn()
+    trackNavClick('contact')
+    expect(window.gtag).toHaveBeenCalledTimes(1)
+    expect(window.gtag).toHaveBeenCalledWith('event', 'nav_click', {
+      nav_item: 'contact',
+    })
+  })
+
+  it('nav_click does nothing when gtag is not loaded', () => {
+    expect(() => trackNavClick('list')).not.toThrow()
+  })
+
+  it('does not send a nav_click on staging builds', () => {
+    vi.stubEnv('VITE_STAGING', '1')
+    window.gtag = vi.fn()
+    trackNavClick('list')
     expect(window.gtag).not.toHaveBeenCalled()
   })
 })

@@ -314,6 +314,8 @@ describe('App.vue', async () => {
       'https://x.com/freddiefujiwara',
       'https://github.com/freddiefujiwara',
       'https://linkedin.com/in/freddiefujiwara',
+      'https://youtrust.jp/users/freddiefujiwara',
+      'https://fril.jp/shop/freddiefujiwara',
     ])
     expect(links.map((link) => link.text())).toEqual([
       'トップ ↗',
@@ -328,6 +330,8 @@ describe('App.vue', async () => {
       'X ↗',
       'GitHub ↗',
       'LinkedIn ↗',
+      'YOUTRUST ↗',
+      'ラクマ ↗',
     ])
     // Same-site links stay in the same tab so visitors can move
     // around the site; only links that leave the site open in a

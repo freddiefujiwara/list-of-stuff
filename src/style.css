@@ -424,3 +424,17 @@ textarea {
 select {
   width: 100%;
 }
+
+/* The four sheet tabs always sit on one row, in equal columns. */
+.sheet-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  flex-wrap: nowrap;
+}
+
+.sheet-tabs .builder-tab {
+  white-space: nowrap;
+  text-align: center;
+  padding-left: 6px;
+  padding-right: 6px;
+}

@@ -136,6 +136,13 @@ describe('App gate and sign-in', () => {
 })
 
 describe('App list interactions', () => {
+  it('shows the four sheet tabs with their short labels', async () => {
+    const w = await mountApp()
+    await signIn()
+    const tabs = w.findAll('.sheet-tabs .builder-tab')
+    expect(tabs.map((t) => t.text())).toEqual(['ワークマン', 'ダイソー', 'その他', 'サブスク'])
+  })
+
   it('switches sheets and reloads', async () => {
     const w = await mountApp()
     await signIn()

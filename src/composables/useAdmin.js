@@ -1,0 +1,166 @@
+import { ref } from 'vue'
+import { API_URL, SHEETS } from '../constants/app.js'
+import { callApi } from '../api.js'
+import { decodeJwtPayload } from '../auth.js'
+import { parseShareToken } from '../share.js'
+
+// State and API orchestration for the admin page, mirroring the alarm
+// site's main.js: the owner's Google ID token or a share token from a
+// temporary access link authenticates every call, and a share-auth
+// failure moves the page to the expired-link state.
+export function useAdmin() {
+  const phase = ref('gate') // 'gate' | 'ready' | 'share-expired'
+  const email = ref('')
+  const isShareSession = ref(false)
+  const shareExpiresAt = ref('')
+  const currentSheet = ref(SHEETS[0].key)
+  const items = ref([])
+  const listStatus = ref('')
+  const gateError = ref('')
+
+  let idToken = null
+  let shareToken = null
+
+  const isShareError = (res) =>
+    Boolean(
+      shareToken &&
+        res &&
+        typeof res.error === 'string' &&
+        res.error.includes('share session'),
+    )
+
+  const api = async (body) => {
+    const res = shareToken
+      ? await callApi(API_URL, null, { ...body, share_token: shareToken })
+      : await callApi(API_URL, idToken, body)
+    if (isShareError(res)) {
+      phase.value = 'share-expired'
+    } else if (res && res._share) {
+      shareExpiresAt.value = res._share.expires_at
+    }
+    return res
+  }
+
+  const loadItems = async () => {
+    listStatus.value = '読み込み中…'
+    try {
+      const res = await api({ action: 'list_items', sheet: currentSheet.value })
+      if (!res.ok) {
+        listStatus.value = res.error || '読み込みに失敗しました'
+        return res
+      }
+      items.value = res.items
+      listStatus.value = `${res.items.length}件`
+      return res
+    } catch (err) {
+      listStatus.value = '読み込みに失敗しました'
+      return { ok: false, error: String(err) }
+    }
+  }
+
+  const selectSheet = async (key) => {
+    currentSheet.value = key
+    await loadItems()
+  }
+
+  // Start from a #share= link: the token replaces the sign-in gate.
+  const initFromHash = async (hash) => {
+    const token = parseShareToken(hash)
+    if (!token) {
+      return false
+    }
+    shareToken = token
+    isShareSession.value = true
+    phase.value = 'ready'
+    await loadItems()
+    return true
+  }
+
+  const onCredential = async (credential) => {
+    // No client-side authorization gate: list-of-stuff-gas verifies
+    // the token and the account, and rejects unauthorized calls
+    // server-side.
+    try {
+      email.value = decodeJwtPayload(credential).email || ''
+    } catch {
+      email.value = ''
+    }
+    idToken = credential
+    gateError.value = ''
+    phase.value = 'ready'
+    const res = await loadItems()
+    if (!res.ok && res.status) {
+      phase.value = 'gate'
+      gateError.value = 'このアカウントでは利用できません'
+      idToken = null
+    }
+  }
+
+  const logout = () => {
+    idToken = null
+    email.value = ''
+    phase.value = 'gate'
+  }
+
+  const createItem = async (form) => {
+    const res = await api({
+      action: 'create_item',
+      sheet: currentSheet.value,
+      item: form,
+    })
+    if (res.ok) {
+      await loadItems()
+    }
+    return res
+  }
+
+  const updateItem = async (row, form) => {
+    const res = await api({
+      action: 'update_item',
+      sheet: currentSheet.value,
+      row,
+      item: form,
+    })
+    if (res.ok) {
+      await loadItems()
+    }
+    return res
+  }
+
+  const deleteItem = async (row) => {
+    const res = await api({
+      action: 'delete_item',
+      sheet: currentSheet.value,
+      row,
+    })
+    if (res.ok) {
+      await loadItems()
+    }
+    return res
+  }
+
+  const issueShare = async () => callApi(API_URL, idToken, { action: 'issue_share' })
+
+  const revokeShare = async () => callApi(API_URL, idToken, { action: 'revoke_share' })
+
+  return {
+    phase,
+    email,
+    isShareSession,
+    shareExpiresAt,
+    currentSheet,
+    items,
+    listStatus,
+    gateError,
+    initFromHash,
+    onCredential,
+    logout,
+    loadItems,
+    selectSheet,
+    createItem,
+    updateItem,
+    deleteItem,
+    issueShare,
+    revokeShare,
+  }
+}

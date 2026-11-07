@@ -633,7 +633,7 @@ describe('App loading state', () => {
     expect(w.text()).toContain('Workman A')
     const pills = w.findAll('.builder-tab')
     await pills[2].trigger('click')
-    expect(w.text()).toContain('読み込み中…')
+    expect(w.text().split('読み込み中…')).toHaveLength(2)
     expect(w.text()).not.toContain('Workman A')
     resolveOthers()
     await flushPromises()

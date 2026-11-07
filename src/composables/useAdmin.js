@@ -50,7 +50,9 @@ export function useAdmin() {
   // sheet's rows instead of leaving them on screen.
   const loadItems = async () => {
     loading.value = true
-    listStatus.value = '読み込み中…'
+    // The loading row in the list says 読み込み中…; the status line
+    // stays blank meanwhile so the text appears only once.
+    listStatus.value = ''
     try {
       const res = await api({ action: 'list_items', sheet: currentSheet.value })
       if (!res.ok) {

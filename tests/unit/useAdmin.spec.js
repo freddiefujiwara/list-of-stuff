@@ -155,7 +155,7 @@ describe('useAdmin', () => {
     expect(res.ok).toBe(false)
   })
 
-  it('does not reload after a failed mutation', async () => {
+  it('reloads the list after a delete even when the delete fails', async () => {
     const calls = routeFetch((body) =>
       body.action === 'list_items'
         ? { ok: true, sheet: body.sheet, items: ITEMS }
@@ -165,7 +165,83 @@ describe('useAdmin', () => {
     await admin.onCredential(credential({ email: 'owner@example.com' }))
     const res = await admin.deleteItem(9)
     expect(res.ok).toBe(false)
+    expect(calls.filter((c) => c.action === 'list_items')).toHaveLength(2)
+  })
+
+  it('does not reload after a failed create', async () => {
+    const calls = routeFetch((body) =>
+      body.action === 'list_items'
+        ? { ok: true, sheet: body.sheet, items: ITEMS }
+        : { ok: false, error: 'nope' },
+    )
+    const admin = useAdmin()
+    await admin.onCredential(credential({ email: 'owner@example.com' }))
+    const res = await admin.createItem({ title: 'x' })
+    expect(res.ok).toBe(false)
     expect(calls.filter((c) => c.action === 'list_items')).toHaveLength(1)
+  })
+
+  it('exposes a loading flag while a list load is in flight', async () => {
+    let resolveList
+    routeFetch((body) => {
+      if (body.action === 'list_items')
+        return new Promise((resolve) => {
+          resolveList = () => resolve({ ok: true, sheet: body.sheet, items: ITEMS })
+        })
+      return { ok: true, genres: [] }
+    })
+    const admin = useAdmin()
+    const pending = admin.loadItems()
+    expect(admin.loading.value).toBe(true)
+    await new Promise((r) => setTimeout(r, 0))
+    resolveList()
+    await pending
+    expect(admin.loading.value).toBe(false)
+    expect(admin.items.value).toEqual(ITEMS)
+  })
+
+  it('clears the loading flag when the load fails', async () => {
+    routeFetch(() => ({ ok: false, status: 403, error: 'forbidden email' }))
+    const admin = useAdmin()
+    await admin.onCredential(credential({ email: 'stranger@example.com' }))
+    expect(admin.loading.value).toBe(false)
+  })
+
+  it('loads the genre options after sign-in', async () => {
+    routeFetch((body) => {
+      if (body.action === 'list_items') return { ok: true, sheet: body.sheet, items: ITEMS }
+      if (body.action === 'list_genres') return { ok: true, genres: ['【衣】服にまつわる物', '【住】暮らしにまつわる物'] }
+      return { ok: true }
+    })
+    const admin = useAdmin()
+    await admin.onCredential(credential({ email: 'owner@example.com' }))
+    expect(admin.genres.value).toEqual(['【衣】服にまつわる物', '【住】暮らしにまつわる物'])
+  })
+
+  it('keeps genres empty when the genre call fails or throws', async () => {
+    routeFetch((body) => {
+      if (body.action === 'list_items') return { ok: true, sheet: body.sheet, items: ITEMS }
+      if (body.action === 'list_genres') throw new Error('down')
+      return { ok: true }
+    })
+    const admin = useAdmin()
+    await admin.onCredential(credential({ email: 'owner@example.com' }))
+    expect(admin.genres.value).toEqual([])
+  })
+
+  it('loads subscriptions on the subscriptions sheet', async () => {
+    const SUBS = [{ row: 2, service: 'NHK', purpose: 'tv', yearly: 21765, monthly: 1813, ratio: 0.015, url: '', basis: 'yearly' }]
+    routeFetch((body) => {
+      if (body.action === 'list_items' && body.sheet === 'subscriptions')
+        return { ok: true, sheet: 'subscriptions', subscriptions: SUBS }
+      if (body.action === 'list_items') return { ok: true, sheet: body.sheet, items: ITEMS }
+      return { ok: true, genres: [] }
+    })
+    const admin = useAdmin()
+    await admin.onCredential(credential({ email: 'owner@example.com' }))
+    await admin.selectSheet('subscriptions')
+    expect(admin.subscriptions.value).toEqual(SUBS)
+    expect(admin.listStatus.value).toBe('1件')
   })
 
   it('authenticates with a share token from the hash', async () => {

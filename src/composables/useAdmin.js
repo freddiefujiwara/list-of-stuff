@@ -1,5 +1,5 @@
 import { ref } from 'vue'
-import { API_URL, SHEETS } from '../constants/app.js'
+import { API_URL, SHEETS, sheetKind } from '../constants/app.js'
 import { callApi } from '../api.js'
 import { decodeJwtPayload } from '../auth.js'
 import { parseShareToken } from '../share.js'
@@ -15,6 +15,9 @@ export function useAdmin() {
   const shareExpiresAt = ref('')
   const currentSheet = ref(SHEETS[0].key)
   const items = ref([])
+  const subscriptions = ref([])
+  const genres = ref([])
+  const loading = ref(false)
   const listStatus = ref('')
   const gateError = ref('')
 
@@ -41,7 +44,12 @@ export function useAdmin() {
     return res
   }
 
+  // Load the current sheet's rows: items for the item sheets,
+  // subscriptions for the subscriptions sheet. While a load is in
+  // flight, `loading` is true so the page can hide the previous
+  // sheet's rows instead of leaving them on screen.
   const loadItems = async () => {
+    loading.value = true
     listStatus.value = '読み込み中…'
     try {
       const res = await api({ action: 'list_items', sheet: currentSheet.value })
@@ -49,11 +57,31 @@ export function useAdmin() {
         listStatus.value = res.error || '読み込みに失敗しました'
         return res
       }
-      items.value = res.items
-      listStatus.value = `${res.items.length}件`
+      if (sheetKind(currentSheet.value) === 'subscriptions') {
+        subscriptions.value = res.subscriptions
+        listStatus.value = `${res.subscriptions.length}件`
+      } else {
+        items.value = res.items
+        listStatus.value = `${res.items.length}件`
+      }
       return res
     } catch (err) {
       listStatus.value = '読み込みに失敗しました'
+      return { ok: false, error: String(err) }
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // The genre dropdown options, collected across the item sheets.
+  const loadGenres = async () => {
+    try {
+      const res = await api({ action: 'list_genres' })
+      if (res.ok) {
+        genres.value = res.genres || []
+      }
+      return res
+    } catch (err) {
       return { ok: false, error: String(err) }
     }
   }
@@ -73,6 +101,7 @@ export function useAdmin() {
     isShareSession.value = true
     phase.value = 'ready'
     await loadItems()
+    await loadGenres()
     return true
   }
 
@@ -89,6 +118,7 @@ export function useAdmin() {
     gateError.value = ''
     phase.value = 'ready'
     const res = await loadItems()
+    await loadGenres()
     if (!res.ok && res.status) {
       phase.value = 'gate'
       gateError.value = 'このアカウントでは利用できません'
@@ -127,15 +157,16 @@ export function useAdmin() {
     return res
   }
 
+  // After a delete the list is always re-read, whatever the outcome,
+  // so the screen matches the sheet even when the delete itself
+  // failed partway.
   const deleteItem = async (row) => {
     const res = await api({
       action: 'delete_item',
       sheet: currentSheet.value,
       row,
     })
-    if (res.ok) {
-      await loadItems()
-    }
+    await loadItems()
     return res
   }
 
@@ -150,12 +181,16 @@ export function useAdmin() {
     shareExpiresAt,
     currentSheet,
     items,
+    subscriptions,
+    genres,
+    loading,
     listStatus,
     gateError,
     initFromHash,
     onCredential,
     logout,
     loadItems,
+    loadGenres,
     selectSheet,
     createItem,
     updateItem,

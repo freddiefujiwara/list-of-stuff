@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import {
   emptyItem,
+  emptySubscription,
+  formFromSubscription,
+  subscriptionCost,
   formFromItem,
   formatPrice,
   itemMeta,
@@ -9,6 +12,27 @@ import {
 } from '../../src/utils/admin.js'
 
 describe('admin utils', () => {
+it('builds a blank subscription form with the yearly basis', () => {
+    expect(emptySubscription()).toEqual({ service: '', purpose: '', basis: 'yearly', amount: '', url: '' })
+  })
+
+  it('maps a subscription into the form on its basis side', () => {
+    expect(
+      formFromSubscription({ service: 'NHK', purpose: 'tv', basis: 'yearly', yearly: 21765, monthly: 1813, url: 'u' }),
+    ).toEqual({ service: 'NHK', purpose: 'tv', basis: 'yearly', amount: 21765, url: 'u' })
+    expect(
+      formFromSubscription({ service: 'M', purpose: '', basis: 'monthly', yearly: 6000, monthly: 500, url: '' }).amount,
+    ).toBe(500)
+    expect(formFromSubscription({})).toEqual({ service: '', purpose: '', basis: 'yearly', amount: '', url: '' })
+    expect(formFromSubscription({ basis: 'monthly' }).amount).toBe('')
+  })
+
+  it('formats the subscription cost line', () => {
+    expect(subscriptionCost({ yearly: 21765, monthly: 1813.75, ratio: 0.015 })).toBe('年 ¥21,765 / 月 ¥1,814 / 1.5%')
+    expect(subscriptionCost({ yearly: '', monthly: '', ratio: '' })).toBe('')
+    expect(subscriptionCost({ yearly: 3000, monthly: 250, ratio: 0 })).toBe('年 ¥3,000 / 月 ¥250')
+  })
+
   it('emptyItem starts blank with one unit', () => {
     expect(emptyItem()).toEqual({
       title: '',

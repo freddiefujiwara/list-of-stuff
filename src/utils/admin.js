@@ -85,3 +85,49 @@ export function shareLinkView(issued, baseUrl, nowMs) {
     expires: formatShareExpiry(issued.expires_at),
   }
 }
+
+// A blank subscription form (create mode). The basis defaults to the
+// yearly side, the sheet's most common shape.
+export function emptySubscription() {
+  return {
+    service: '',
+    purpose: '',
+    basis: 'yearly',
+    amount: '',
+    url: '',
+  }
+}
+
+// Copy a listed subscription into the edit form: the amount input
+// shows the entered side (the basis side); the other side is derived
+// by the sheet's formulas.
+export function formFromSubscription(sub) {
+  const basis = sub.basis === 'monthly' ? 'monthly' : 'yearly'
+  return {
+    service: sub.service ?? '',
+    purpose: sub.purpose ?? '',
+    basis,
+    amount: basis === 'monthly' ? (sub.monthly ?? '') : (sub.yearly ?? ''),
+    url: sub.url ?? '',
+  }
+}
+
+// The cost line under a subscription name: yearly and monthly amounts
+// (computed by the sheet) and the share of the monthly total when
+// the sheet carries a ratio.
+export function subscriptionCost(sub) {
+  const parts = []
+  const yearly = formatPrice(sub.yearly)
+  const monthly = formatPrice(sub.monthly)
+  if (yearly) {
+    parts.push(`年 ${yearly}`)
+  }
+  if (monthly) {
+    parts.push(`月 ${monthly}`)
+  }
+  const ratio = Number(sub.ratio)
+  if (Number.isFinite(ratio) && ratio > 0) {
+    parts.push(`${(ratio * 100).toFixed(1)}%`)
+  }
+  return parts.join(' / ')
+}

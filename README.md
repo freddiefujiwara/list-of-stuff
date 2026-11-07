@@ -1,8 +1,8 @@
 # A Minimalist's List of Stuff
 
-[![Node.js CI](https://github.com/freddiefujiwara/list-of-stuff/actions/workflows/node.js.yml/badge.svg)](https://github.com/freddiefujiwara/list-of-stuff/actions/workflows/node.js.yml)
+[![Node.js CI](https://github.com/freddiefujiwara/list-of-stuff-admin/actions/workflows/node.js.yml/badge.svg)](https://github.com/freddiefujiwara/list-of-stuff-admin/actions/workflows/node.js.yml)
 
-[Live Demo](https://freddiefujiwara.com/list-of-stuff/)
+[Live Demo](https://freddiefujiwara.com/list-of-stuff-admin/)
 
 This is a simple website that shows a list of a minimalist's belongings.
 

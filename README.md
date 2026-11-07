@@ -5,14 +5,17 @@
 [Live Demo](https://freddiefujiwara.com/list-of-stuff-admin/)
 
 This is the private admin site for a minimalist's list of belongings.
-It manages the hand-edited item sheets (workman, variety, others) of
-the "List of stuff" spreadsheet; the public list itself is published
-as a blog article. The room sheet is rewritten by the Rakuten ROOM
-sync and is not editable here.
+It manages the hand-edited sheets (workman, variety, others and
+subscriptions) of the "List of stuff" spreadsheet; the public list
+itself is published as a blog article. The room sheet is rewritten
+by the Rakuten ROOM sync and is not editable here.
 
 ## Features
 
--   List, create, edit and delete items per sheet.
+-   List, create, edit and delete items and subscriptions per sheet.
+    The genre is picked from a dropdown of the genres in use, and a
+    subscription amount is entered yearly or monthly while the
+    sheet's formulas derive the other side and the ratio.
 -   Google sign-in restricted to the owner's account, plus temporary
     access links (one month) issued by the owner, the same scheme as
     the alarm, health and tweet admin sites.

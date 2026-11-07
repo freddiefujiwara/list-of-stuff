@@ -44,15 +44,40 @@ export function useAdmin() {
     return res
   }
 
+  // Reads go through apiRead: when a call fails at the transport
+  // level (the fetch rejects, or the response is not JSON — the GAS
+  // redirect chain drops out now and then, especially on mobile
+  // networks), retry up to twice before surfacing the failure.
+  // Business errors ({ ok: false }) are definitive and return at
+  // once; mutations are never retried, because a retry could apply
+  // a change whose response was lost.
+  const RETRY_DELAYS_MS = [500, 1500]
+  const apiRead = async (body) => {
+    let lastError
+    for (let attempt = 0; attempt <= RETRY_DELAYS_MS.length; attempt++) {
+      try {
+        return await api(body)
+      } catch (err) {
+        lastError = err
+        if (attempt < RETRY_DELAYS_MS.length) {
+          await new Promise((resolve) => setTimeout(resolve, RETRY_DELAYS_MS[attempt]))
+        }
+      }
+    }
+    throw lastError
+  }
+
   // Load the current sheet's rows: items for the item sheets,
   // subscriptions for the subscriptions sheet. While a load is in
   // flight, `loading` is true so the page can hide the previous
   // sheet's rows instead of leaving them on screen.
   const loadItems = async () => {
     loading.value = true
-    listStatus.value = '読み込み中…'
+    // The loading row in the list says 読み込み中…; the status line
+    // stays blank meanwhile so the text appears only once.
+    listStatus.value = ''
     try {
-      const res = await api({ action: 'list_items', sheet: currentSheet.value })
+      const res = await apiRead({ action: 'list_items', sheet: currentSheet.value })
       if (!res.ok) {
         listStatus.value = res.error || '読み込みに失敗しました'
         return res
@@ -76,7 +101,7 @@ export function useAdmin() {
   // The genre dropdown options, collected across the item sheets.
   const loadGenres = async () => {
     try {
-      const res = await api({ action: 'list_genres' })
+      const res = await apiRead({ action: 'list_genres' })
       if (res.ok) {
         genres.value = res.genres || []
       }

@@ -6,12 +6,13 @@ export const FALLBACK_IMAGE_URL = 'https://tshop.r10s.jp/rukusu/cabinet/images/j
 // The hand-edited sheets the admin manages. The room sheet is
 // rewritten by the Rakuten ROOM sync, so it never appears here. The
 // subscriptions sheet has a different column shape, marked by its
-// kind. Labels are the names the owner uses for each sheet.
+// kind. Labels are the names the owner uses for each sheet; the tab
+// labels are short forms so all four tabs fit on one row.
 export const SHEETS = [
-  { key: 'workman', label: 'ワークマン', kind: 'items' },
-  { key: 'variety', label: 'ダイソー・100均', kind: 'items' },
-  { key: 'others', label: 'その他', kind: 'items' },
-  { key: 'subscriptions', label: 'サブスクリプション', kind: 'subscriptions' },
+  { key: 'workman', label: 'ワークマン', tabLabel: 'ワークマン', kind: 'items' },
+  { key: 'variety', label: 'ダイソー・100均', tabLabel: 'ダイソー', kind: 'items' },
+  { key: 'others', label: 'その他', tabLabel: 'その他', kind: 'items' },
+  { key: 'subscriptions', label: 'サブスクリプション', tabLabel: 'サブスク', kind: 'subscriptions' },
 ]
 
 // The kind ('items' | 'subscriptions') of a sheet key.

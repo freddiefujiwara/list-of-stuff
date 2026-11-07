@@ -15,6 +15,10 @@ describe('constants', () => {
     expect(SHEETS.map((s) => s.key)).not.toContain('room')
   })
 
+  it('gives every sheet a short tab label for the one-row tab bar', () => {
+    expect(SHEETS.map((s) => s.tabLabel)).toEqual(['ワークマン', 'ダイソー', 'その他', 'サブスク'])
+  })
+
   it('marks the subscriptions sheet with its own kind', () => {
     expect(sheetKind('subscriptions')).toBe('subscriptions')
     expect(sheetKind('workman')).toBe('items')

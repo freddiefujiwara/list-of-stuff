@@ -348,7 +348,7 @@ const onLogout = () => {
         <p v-if="notice" class="meta">{{ notice }}</p>
         <p v-if="shareBanner" class="meta">{{ shareBanner }}</p>
         <p v-if="email" class="meta">{{ email }}</p>
-        <div class="builder-tabs" role="tablist" aria-label="シート">
+        <div class="builder-tabs sheet-tabs" role="tablist" aria-label="シート">
           <button
             v-for="sheet in SHEETS"
             :key="sheet.key"
@@ -359,7 +359,7 @@ const onLogout = () => {
             :aria-selected="currentSheet === sheet.key"
             @click="onListSheet(sheet.key)"
           >
-            {{ sheet.label }}
+            {{ sheet.tabLabel }}
           </button>
         </div>
         <div v-if="loading" class="alarm-row">
@@ -442,7 +442,7 @@ const onLogout = () => {
 
       <section v-if="phase === 'ready' && tab === 'form'" class="table-wrap">
         <h2 class="section-title">{{ formTitle }}</h2>
-        <div v-if="editingRow === null" class="builder-tabs" role="tablist" aria-label="シート">
+        <div v-if="editingRow === null" class="builder-tabs sheet-tabs" role="tablist" aria-label="シート">
           <button
             v-for="sheet in SHEETS"
             :key="sheet.key"
@@ -453,7 +453,7 @@ const onLogout = () => {
             :aria-selected="currentSheet === sheet.key"
             @click="onFormSheet(sheet.key)"
           >
-            {{ sheet.label }}
+            {{ sheet.tabLabel }}
           </button>
         </div>
         <p v-else class="meta">{{ sheetLabel(currentSheet) }}{{ isSubForm ? 'を編集中' : 'のアイテムを編集中' }}</p>

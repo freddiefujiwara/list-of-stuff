@@ -286,3 +286,70 @@ describe('useAdmin', () => {
     expect(admin.email.value).toBe('')
   })
 })
+
+describe('useAdmin read retries', () => {
+  it('retries a read that fails at the transport level, then succeeds', async () => {
+    let listCalls = 0
+    routeFetch((body) => {
+      if (body.action === 'list_items') {
+        listCalls++
+        if (listCalls <= 2) throw new Error('Failed to fetch')
+        return { ok: true, sheet: body.sheet, items: ITEMS }
+      }
+      return { ok: true, genres: [] }
+    })
+    const admin = useAdmin()
+    await admin.onCredential(credential({ email: 'owner@example.com' }))
+    expect(admin.items.value).toEqual(ITEMS)
+    expect(listCalls).toBe(3)
+    expect(admin.listStatus.value).toBe('1件')
+  })
+
+  it('gives up after three attempts and reports the failure', async () => {
+    let listCalls = 0
+    routeFetch((body) => {
+      if (body.action === 'list_items') {
+        listCalls++
+        throw new Error('Failed to fetch')
+      }
+      return { ok: true, genres: [] }
+    })
+    const admin = useAdmin()
+    await admin.onCredential(credential({ email: 'owner@example.com' }))
+    expect(listCalls).toBe(3)
+    expect(admin.listStatus.value).toBe('読み込みに失敗しました')
+    expect(admin.loading.value).toBe(false)
+  })
+
+  it('does not retry a business error', async () => {
+    let listCalls = 0
+    routeFetch((body) => {
+      if (body.action === 'list_items') {
+        listCalls++
+        return { ok: false, error: 'sheet is not editable: room' }
+      }
+      return { ok: true, genres: [] }
+    })
+    const admin = useAdmin()
+    await admin.onCredential(credential({ email: 'owner@example.com' }))
+    expect(listCalls).toBe(1)
+    expect(admin.listStatus.value).toBe('sheet is not editable: room')
+  })
+
+  it('retries the genre read once and still fills the options', async () => {
+    let genreCalls = 0
+    routeFetch((body) => {
+      if (body.action === 'list_items') return { ok: true, sheet: body.sheet, items: ITEMS }
+      if (body.action === 'list_genres') {
+        genreCalls++
+        if (genreCalls === 1) throw new Error('Failed to fetch')
+        return { ok: true, genres: ['G1'] }
+      }
+      return { ok: true }
+    })
+    const admin = useAdmin()
+    await admin.onCredential(credential({ email: 'owner@example.com' }))
+    expect(admin.genres.value).toEqual(['G1'])
+    expect(genreCalls).toBe(2)
+  })
+})

@@ -615,3 +615,29 @@ describe('App v2 coverage: fallbacks and remaining branches', () => {
     expect(w.find('#f-title').exists()).toBe(true)
   })
 })
+
+
+describe('App loading state', () => {
+  it('hides the previous rows and shows a loading row while the next sheet loads', async () => {
+    let resolveOthers
+    handler = (body) => {
+      if (body.action === 'list_items' && body.sheet === 'others')
+        return new Promise((resolve) => {
+          resolveOthers = () =>
+            resolve({ ok: true, sheet: 'others', items: ITEMS_BY_SHEET.others })
+        })
+      return defaultHandler(body)
+    }
+    const w = await mountApp()
+    await signIn()
+    expect(w.text()).toContain('Workman A')
+    const pills = w.findAll('.builder-tab')
+    await pills[2].trigger('click')
+    expect(w.text()).toContain('読み込み中…')
+    expect(w.text()).not.toContain('Workman A')
+    resolveOthers()
+    await flushPromises()
+    expect(w.text()).toContain('Other C')
+    expect(w.text()).not.toContain('読み込み中…')
+  })
+})

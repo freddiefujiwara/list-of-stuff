@@ -17,6 +17,7 @@ export function useAdmin() {
   const items = ref([])
   const subscriptions = ref([])
   const genres = ref([])
+  const loading = ref(false)
   const listStatus = ref('')
   const gateError = ref('')
 
@@ -44,8 +45,11 @@ export function useAdmin() {
   }
 
   // Load the current sheet's rows: items for the item sheets,
-  // subscriptions for the subscriptions sheet.
+  // subscriptions for the subscriptions sheet. While a load is in
+  // flight, `loading` is true so the page can hide the previous
+  // sheet's rows instead of leaving them on screen.
   const loadItems = async () => {
+    loading.value = true
     listStatus.value = '読み込み中…'
     try {
       const res = await api({ action: 'list_items', sheet: currentSheet.value })
@@ -64,6 +68,8 @@ export function useAdmin() {
     } catch (err) {
       listStatus.value = '読み込みに失敗しました'
       return { ok: false, error: String(err) }
+    } finally {
+      loading.value = false
     }
   }
 
@@ -177,6 +183,7 @@ export function useAdmin() {
     items,
     subscriptions,
     genres,
+    loading,
     listStatus,
     gateError,
     initFromHash,

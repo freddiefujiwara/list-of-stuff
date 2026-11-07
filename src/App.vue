@@ -29,6 +29,7 @@ const {
   items,
   subscriptions,
   genres,
+  loading,
   listStatus,
   gateError,
 } = admin
@@ -361,6 +362,10 @@ const onLogout = () => {
             {{ sheet.label }}
           </button>
         </div>
+        <div v-if="loading" class="alarm-row">
+          <span class="meta">読み込み中…</span>
+        </div>
+        <template v-else>
         <div v-if="sheetKind(currentSheet) !== 'subscriptions'">
           <div v-for="item in items" :key="item.row" class="alarm-row">
             <div class="item-main">
@@ -431,6 +436,7 @@ const onLogout = () => {
             </div>
           </div>
         </div>
+        </template>
         <p class="meta">{{ listStatus }}</p>
       </section>
 

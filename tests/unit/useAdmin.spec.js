@@ -181,6 +181,32 @@ describe('useAdmin', () => {
     expect(calls.filter((c) => c.action === 'list_items')).toHaveLength(1)
   })
 
+  it('exposes a loading flag while a list load is in flight', async () => {
+    let resolveList
+    routeFetch((body) => {
+      if (body.action === 'list_items')
+        return new Promise((resolve) => {
+          resolveList = () => resolve({ ok: true, sheet: body.sheet, items: ITEMS })
+        })
+      return { ok: true, genres: [] }
+    })
+    const admin = useAdmin()
+    const pending = admin.loadItems()
+    expect(admin.loading.value).toBe(true)
+    await new Promise((r) => setTimeout(r, 0))
+    resolveList()
+    await pending
+    expect(admin.loading.value).toBe(false)
+    expect(admin.items.value).toEqual(ITEMS)
+  })
+
+  it('clears the loading flag when the load fails', async () => {
+    routeFetch(() => ({ ok: false, status: 403, error: 'forbidden email' }))
+    const admin = useAdmin()
+    await admin.onCredential(credential({ email: 'stranger@example.com' }))
+    expect(admin.loading.value).toBe(false)
+  })
+
   it('loads the genre options after sign-in', async () => {
     routeFetch((body) => {
       if (body.action === 'list_items') return { ok: true, sheet: body.sheet, items: ITEMS }

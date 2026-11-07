@@ -17,7 +17,7 @@ const ITEMS_BY_SHEET = {
   ],
   variety: [],
   others: [
-    { row: 2, title: 'Other C', image: '', url: '', price: '', unit: '', genre: '', comment: '' },
+    { row: 2, title: 'Other C', image: '', url: '', price: '', unit: '', genre: '旧ジャンル', comment: '' },
   ],
 }
 
@@ -26,7 +26,24 @@ let handler
 let gisCallback
 let wrapper
 
+const SUBSCRIPTIONS = [
+  { row: 2, service: 'NHK', purpose: 'テレビ', yearly: 21765, monthly: 1814, ratio: 0.015, url: 'https://www.nhk.or.jp/', basis: 'yearly' },
+  { row: 3, service: 'DAZN', purpose: '野球', yearly: 27600, monthly: 2300, ratio: 0.019, url: '', basis: 'monthly' },
+  { row: 4, service: 'PurposeLess', purpose: '', yearly: 3000, monthly: 250, ratio: '', url: '', basis: 'yearly' },
+]
+
 const defaultHandler = (body) => {
+  if (body.action === 'list_genres') {
+    return { ok: true, genres: ['衣料', '住まい'] }
+  }
+  if (body.action === 'list_items' && body.sheet === 'subscriptions') {
+    return {
+      ok: true,
+      sheet: 'subscriptions',
+      subscriptions: SUBSCRIPTIONS,
+      ...(body.share_token ? { _share: { expires_at: '2026-12-07T00:00:00.000Z' } } : {}),
+    }
+  }
   if (body.action === 'list_items') {
     return {
       ok: true,
@@ -407,5 +424,194 @@ describe('App share sessions and chrome', () => {
     delete window.google
     await w.findAll('button').find((b) => b.text() === 'ログアウト').trigger('click')
     expect(w.text()).toContain('Googleログインが必要です')
+  })
+})
+
+
+describe('App v2: genre dropdown, form delete, subscriptions', () => {
+  it('offers the genres as a dropdown and submits the chosen one', async () => {
+    const w = await mountApp()
+    await signIn()
+    await w.findAll('.main-tab')[1].trigger('click')
+    const select = w.find('#f-genre')
+    expect(select.exists()).toBe(true)
+    expect(select.findAll('option').map((o) => o.text())).toEqual(['衣料', '住まい'])
+    await select.setValue('住まい')
+    await w.find('#f-title').setValue('プルダウン商品')
+    await w.find('.post-button').trigger('click')
+    await flushPromises()
+    const create = calls.find((c) => c.action === 'create_item')
+    expect(create.item.genre).toBe('住まい')
+  })
+
+  it('deletes from the edit form and returns to the list with a notice', async () => {
+    const w = await mountApp()
+    await signIn()
+    vi.spyOn(window, 'confirm').mockReturnValue(true)
+    await w.findAll('.icon-btn')[0].trigger('click')
+    const deleteButton = w.findAll('button').find((b) => b.text() === '削除する')
+    expect(deleteButton).toBeTruthy()
+    await deleteButton.trigger('click')
+    await flushPromises()
+    expect(calls.some((c) => c.action === 'delete_item' && c.sheet === 'workman' && c.row === 2)).toBe(true)
+    expect(w.text()).toContain('削除しました')
+    expect(w.text()).toContain('登録中のアイテム')
+  })
+
+  it('keeps the form open when the form delete fails', async () => {
+    handler = (body) =>
+      body.action === 'delete_item' ? { ok: false, error: 'row out of range: 2' } : defaultHandler(body)
+    const w = await mountApp()
+    await signIn()
+    vi.spyOn(window, 'confirm').mockReturnValue(true)
+    await w.findAll('.icon-btn')[0].trigger('click')
+    const deleteButton = w.findAll('button').find((b) => b.text() === '削除する')
+    await deleteButton.trigger('click')
+    await flushPromises()
+    expect(w.text()).toContain('row out of range: 2')
+    expect(w.find('#f-title').exists()).toBe(true)
+  })
+
+  it('lists subscriptions on their pill with the cost line', async () => {
+    const w = await mountApp()
+    await signIn()
+    const pills = w.findAll('.builder-tab')
+    await pills[pills.length - 1].trigger('click')
+    await flushPromises()
+    expect(w.text()).toContain('登録中のサブスクリプション')
+    expect(w.text()).toContain('NHK')
+    expect(w.text()).toContain('年 ¥21,765 / 月 ¥1,814 / 1.5%')
+    expect(w.text()).toContain('DAZN')
+  })
+
+  it('creates a subscription with the monthly basis', async () => {
+    const w = await mountApp()
+    await signIn()
+    await w.findAll('.main-tab')[1].trigger('click')
+    const pills = w.findAll('.builder-tab')
+    await pills[pills.length - 1].trigger('click')
+    await flushPromises()
+    await w.find('#f-service').setValue('NewSub')
+    await w.find('#f-purpose').setValue('学習')
+    const basisTabs = w.findAll('.builder-tab')
+    await basisTabs[basisTabs.length - 1].trigger('click')
+    await w.find('#f-amount').setValue('1500')
+    await w.find('#f-sub-url').setValue('https://newsub.example/')
+    await w.find('.post-button').trigger('click')
+    await flushPromises()
+    const create = calls.find((c) => c.action === 'create_item' && c.sheet === 'subscriptions')
+    expect(create).toBeTruthy()
+    expect(create.item).toMatchObject({ service: 'NewSub', purpose: '学習', basis: 'monthly', amount: 1500, url: 'https://newsub.example/' })
+  })
+
+  it('edits a subscription with its basis amount prefilled', async () => {
+    const w = await mountApp()
+    await signIn()
+    const pills = w.findAll('.builder-tab')
+    await pills[pills.length - 1].trigger('click')
+    await flushPromises()
+    const editButtons = w.findAll('.icon-btn')
+    await editButtons[2].trigger('click')
+    expect(w.find('#f-service').element.value).toBe('DAZN')
+    expect(w.find('#f-amount').element.value).toBe('2300')
+    const basisTabs = w.findAll('.builder-tab')
+    await basisTabs[0].trigger('click')
+    await w.find('#f-amount').setValue('24000')
+    await w.find('.post-button').trigger('click')
+    await flushPromises()
+    const update = calls.find((c) => c.action === 'update_item' && c.sheet === 'subscriptions')
+    expect(update).toMatchObject({ row: 3, item: { service: 'DAZN', basis: 'yearly', amount: 24000 } })
+  })
+})
+
+
+describe('App v2 coverage: fallbacks and remaining branches', () => {
+  it('keeps a legacy genre selectable when editing', async () => {
+    const w = await mountApp()
+    await signIn()
+    const pills = w.findAll('.builder-tab')
+    await pills[2].trigger('click')
+    await flushPromises()
+    await w.findAll('.icon-btn')[0].trigger('click')
+    const select = w.find('#f-genre')
+    expect(select.element.value).toBe('旧ジャンル')
+    expect(select.findAll('option').map((o) => o.text())).toEqual(['衣料', '住まい', '旧ジャンル'])
+  })
+
+  it('creates with a blank genre when the genre list could not load', async () => {
+    handler = (body) =>
+      body.action === 'list_genres' ? { ok: false, error: 'down' } : defaultHandler(body)
+    const w = await mountApp()
+    await signIn()
+    await w.findAll('.main-tab')[1].trigger('click')
+    expect(w.find('#f-genre').findAll('option')).toHaveLength(0)
+    await w.find('#f-title').setValue('ジャンルなし商品')
+    await w.find('.post-button').trigger('click')
+    await flushPromises()
+    expect(calls.find((c) => c.action === 'create_item').item.genre).toBe('')
+  })
+
+  it('shows the generic notice when a list delete fails without a reason', async () => {
+    handler = (body) => (body.action === 'delete_item' ? { ok: false } : defaultHandler(body))
+    const w = await mountApp()
+    await signIn()
+    vi.spyOn(window, 'confirm').mockReturnValue(true)
+    await w.findAll('button').find((b) => b.attributes('aria-label') === '削除').trigger('click')
+    await flushPromises()
+    expect(w.text()).toContain('削除に失敗しました')
+  })
+
+  it('deletes a subscription from the list', async () => {
+    const w = await mountApp()
+    await signIn()
+    const pills = w.findAll('.builder-tab')
+    await pills[pills.length - 1].trigger('click')
+    await flushPromises()
+    vi.spyOn(window, 'confirm').mockReturnValue(true)
+    await w.findAll('button').find((b) => b.attributes('aria-label') === '削除').trigger('click')
+    await flushPromises()
+    expect(calls.find((c) => c.action === 'delete_item')).toMatchObject({ sheet: 'subscriptions', row: 2 })
+    expect(w.text()).toContain('削除しました')
+  })
+
+  it('stays on the form when the form delete is cancelled', async () => {
+    const w = await mountApp()
+    await signIn()
+    vi.spyOn(window, 'confirm').mockReturnValue(false)
+    await w.findAll('.icon-btn')[0].trigger('click')
+    const deleteButton = w.findAll('button').find((b) => b.text() === '削除する')
+    await deleteButton.trigger('click')
+    await flushPromises()
+    expect(calls.find((c) => c.action === 'delete_item')).toBeUndefined()
+    expect(w.find('#f-title').exists()).toBe(true)
+  })
+
+  it('deletes a subscription from its edit form', async () => {
+    const w = await mountApp()
+    await signIn()
+    const pills = w.findAll('.builder-tab')
+    await pills[pills.length - 1].trigger('click')
+    await flushPromises()
+    await w.findAll('.icon-btn')[0].trigger('click')
+    expect(w.text()).toContain('サブスクリプションを編集')
+    vi.spyOn(window, 'confirm').mockReturnValue(true)
+    const deleteButton = w.findAll('button').find((b) => b.text() === '削除する')
+    await deleteButton.trigger('click')
+    await flushPromises()
+    expect(calls.find((c) => c.action === 'delete_item')).toMatchObject({ sheet: 'subscriptions', row: 2 })
+    expect(w.text()).toContain('削除しました')
+  })
+
+  it('shows the generic form error when the form delete fails without a reason', async () => {
+    handler = (body) => (body.action === 'delete_item' ? { ok: false } : defaultHandler(body))
+    const w = await mountApp()
+    await signIn()
+    vi.spyOn(window, 'confirm').mockReturnValue(true)
+    await w.findAll('.icon-btn')[0].trigger('click')
+    const deleteButton = w.findAll('button').find((b) => b.text() === '削除する')
+    await deleteButton.trigger('click')
+    await flushPromises()
+    expect(w.text()).toContain('削除に失敗しました')
+    expect(w.find('#f-title').exists()).toBe(true)
   })
 })

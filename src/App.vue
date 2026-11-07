@@ -1,8 +1,17 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
-import { FALLBACK_IMAGE_URL, GOOGLE_CLIENT_ID, SHEETS } from './constants/app.js'
+import { FALLBACK_IMAGE_URL, GOOGLE_CLIENT_ID, SHEETS, sheetKind } from './constants/app.js'
 import { useAdmin } from './composables/useAdmin.js'
-import { emptyItem, formFromItem, itemMeta, shareLinkView, sheetLabel } from './utils/admin.js'
+import {
+  emptyItem,
+  emptySubscription,
+  formFromItem,
+  formFromSubscription,
+  itemMeta,
+  shareLinkView,
+  sheetLabel,
+  subscriptionCost,
+} from './utils/admin.js'
 import { THEME_KEY, applyTheme, nextTheme, resolveTheme } from './theme.js'
 import {
   formatShareExpiry,
@@ -18,6 +27,8 @@ const {
   shareExpiresAt,
   currentSheet,
   items,
+  subscriptions,
+  genres,
   listStatus,
   gateError,
 } = admin
@@ -44,31 +55,68 @@ const shareBanner = computed(() => {
   return `一時アクセスリンクで利用中（${formatShareExpiry(shareExpiresAt.value)} まで有効、${remaining}）`
 })
 
-// --- Item form (登録 tab doubles as the edit form) ---
+// --- Entry form (登録 tab doubles as the edit form) ---
+// The form shape follows the current sheet's kind: item fields for
+// the item sheets, subscription fields for the subscriptions sheet.
+const isSubForm = computed(() => sheetKind(currentSheet.value) === 'subscriptions')
+const blankForm = () => (isSubForm.value ? emptySubscription() : emptyItem())
 const form = ref(emptyItem())
 const editingRow = ref(null)
 const formStatus = ref('')
 const saving = ref(false)
+const notice = ref('')
+
+// Genre dropdown options: the collected genres, plus the edited
+// entry's own genre when it is not among them (legacy values stay
+// selectable instead of being silently replaced).
+const genreOptions = computed(() => {
+  const options = [...genres.value]
+  const current = form.value.genre
+  if (current && !options.includes(current)) {
+    options.push(current)
+  }
+  return options
+})
 
 const openCreate = () => {
   editingRow.value = null
-  form.value = emptyItem()
+  form.value = blankForm()
+  if (!isSubForm.value && genres.value.length > 0) {
+    form.value.genre = genres.value[0]
+  }
   formStatus.value = ''
   tab.value = 'form'
 }
 
-const openEdit = (item) => {
-  editingRow.value = item.row
-  form.value = formFromItem(item)
+const openEdit = (entry) => {
+  editingRow.value = entry.row
+  form.value = isSubForm.value ? formFromSubscription(entry) : formFromItem(entry)
   formStatus.value = ''
   tab.value = 'form'
 }
 
 const cancelEdit = () => {
   editingRow.value = null
-  form.value = emptyItem()
+  form.value = blankForm()
   formStatus.value = ''
   tab.value = 'list'
+}
+
+// Switching sheets from the create form resets the form to the new
+// sheet kind's blank shape.
+// The form's sheet pills render only in create mode, so switching
+// sheets there always resets the form.
+const onFormSheet = async (key) => {
+  await admin.selectSheet(key)
+  form.value = blankForm()
+  if (!isSubForm.value && genres.value.length > 0) {
+    form.value.genre = genres.value[0]
+  }
+}
+
+const onListSheet = async (key) => {
+  notice.value = ''
+  await admin.selectSheet(key)
 }
 
 const submit = async () => {
@@ -81,7 +129,7 @@ const submit = async () => {
         : await admin.updateItem(editingRow.value, { ...form.value })
     if (res.ok) {
       editingRow.value = null
-      form.value = emptyItem()
+      form.value = blankForm()
       tab.value = 'list'
     } else {
       formStatus.value = res.error || '保存に失敗しました'
@@ -93,12 +141,46 @@ const submit = async () => {
   }
 }
 
-const remove = async (item) => {
-  if (!window.confirm(`「${item.title}」を削除しますか？`)) {
+const remove = async (entry) => {
+  const name =
+    sheetKind(currentSheet.value) === 'subscriptions' ? entry.service : entry.title
+  if (!window.confirm(`「${name}」を削除しますか？`)) {
     return
   }
-  await admin.deleteItem(item.row)
+  const res = await admin.deleteItem(entry.row)
+  notice.value = res.ok ? '削除しました' : res.error || '削除に失敗しました'
 }
+
+// The edit form carries its own delete button, mirroring the list.
+const removeFromForm = async () => {
+  const name = isSubForm.value ? form.value.service : form.value.title
+  if (!window.confirm(`「${name}」を削除しますか？`)) {
+    return
+  }
+  const res = await admin.deleteItem(editingRow.value)
+  if (res.ok) {
+    notice.value = '削除しました'
+    editingRow.value = null
+    form.value = blankForm()
+    formStatus.value = ''
+    tab.value = 'list'
+  } else {
+    formStatus.value = res.error || '削除に失敗しました'
+  }
+}
+
+const formTitle = computed(() => {
+  if (isSubForm.value) {
+    return editingRow.value === null ? '新しいサブスクリプション' : 'サブスクリプションを編集'
+  }
+  return editingRow.value === null ? '新しいアイテム' : 'アイテムを編集'
+})
+
+const listTitle = computed(() =>
+  sheetKind(currentSheet.value) === 'subscriptions'
+    ? '登録中のサブスクリプション'
+    : '登録中のアイテム',
+)
 
 const onThumbError = (event) => {
   const img = event.target
@@ -259,9 +341,10 @@ const onLogout = () => {
 
       <section v-if="phase === 'ready' && tab === 'list'" class="table-wrap">
         <div class="section-head">
-          <h2 class="section-title">登録中のアイテム</h2>
+          <h2 class="section-title">{{ listTitle }}</h2>
           <button class="theme-toggle" type="button" @click="admin.loadItems()">再読み込み</button>
         </div>
+        <p v-if="notice" class="meta">{{ notice }}</p>
         <p v-if="shareBanner" class="meta">{{ shareBanner }}</p>
         <p v-if="email" class="meta">{{ email }}</p>
         <div class="builder-tabs" role="tablist" aria-label="シート">
@@ -273,12 +356,12 @@ const onLogout = () => {
             :class="{ active: currentSheet === sheet.key }"
             role="tab"
             :aria-selected="currentSheet === sheet.key"
-            @click="admin.selectSheet(sheet.key)"
+            @click="onListSheet(sheet.key)"
           >
             {{ sheet.label }}
           </button>
         </div>
-        <div>
+        <div v-if="sheetKind(currentSheet) !== 'subscriptions'">
           <div v-for="item in items" :key="item.row" class="alarm-row">
             <div class="item-main">
               <img
@@ -316,11 +399,43 @@ const onLogout = () => {
             </div>
           </div>
         </div>
+        <div v-else>
+          <div v-for="sub in subscriptions" :key="sub.row" class="alarm-row">
+            <div class="item-main">
+              <div>
+                <div class="item-title">{{ sub.service }}</div>
+                <div v-if="sub.purpose" class="alarm-commands">{{ sub.purpose }}</div>
+                <div class="alarm-commands">{{ subscriptionCost(sub) }}</div>
+                <div v-if="sub.url" class="alarm-commands">{{ sub.url }}</div>
+              </div>
+            </div>
+            <div class="row-actions">
+              <button
+                type="button"
+                class="icon-btn"
+                title="編集"
+                aria-label="編集"
+                @click="openEdit(sub)"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" /></svg>
+              </button>
+              <button
+                type="button"
+                class="icon-btn"
+                title="削除"
+                aria-label="削除"
+                @click="remove(sub)"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+              </button>
+            </div>
+          </div>
+        </div>
         <p class="meta">{{ listStatus }}</p>
       </section>
 
       <section v-if="phase === 'ready' && tab === 'form'" class="table-wrap">
-        <h2 class="section-title">{{ editingRow === null ? '新しいアイテム' : 'アイテムを編集' }}</h2>
+        <h2 class="section-title">{{ formTitle }}</h2>
         <div v-if="editingRow === null" class="builder-tabs" role="tablist" aria-label="シート">
           <button
             v-for="sheet in SHEETS"
@@ -330,31 +445,72 @@ const onLogout = () => {
             :class="{ active: currentSheet === sheet.key }"
             role="tab"
             :aria-selected="currentSheet === sheet.key"
-            @click="admin.selectSheet(sheet.key)"
+            @click="onFormSheet(sheet.key)"
           >
             {{ sheet.label }}
           </button>
         </div>
-        <p v-else class="meta">{{ sheetLabel(currentSheet) }}のアイテムを編集中</p>
+        <p v-else class="meta">{{ sheetLabel(currentSheet) }}{{ isSubForm ? 'を編集中' : 'のアイテムを編集中' }}</p>
 
-        <label class="form-label" for="f-title">商品名</label>
-        <input id="f-title" v-model="form.title" type="text" />
-        <label class="form-label" for="f-image">画像URL</label>
-        <input id="f-image" v-model="form.image" type="url" />
-        <label class="form-label" for="f-url">商品URL</label>
-        <input id="f-url" v-model="form.url" type="url" />
-        <div class="field-row">
-          <label>価格 <input v-model="form.price" type="number" min="0" /></label>
-          <label>個数 <input v-model="form.unit" type="number" min="1" /></label>
-        </div>
-        <label class="form-label" for="f-genre">ジャンル</label>
-        <input id="f-genre" v-model="form.genre" type="text" />
-        <label class="form-label" for="f-comment">コメント</label>
-        <textarea id="f-comment" v-model="form.comment" rows="3"></textarea>
+        <template v-if="!isSubForm">
+          <label class="form-label" for="f-title">商品名</label>
+          <input id="f-title" v-model="form.title" type="text" />
+          <label class="form-label" for="f-image">画像URL</label>
+          <input id="f-image" v-model="form.image" type="url" />
+          <label class="form-label" for="f-url">商品URL</label>
+          <input id="f-url" v-model="form.url" type="url" />
+          <div class="field-row">
+            <label>価格 <input v-model="form.price" type="number" min="0" /></label>
+            <label>個数 <input v-model="form.unit" type="number" min="1" /></label>
+          </div>
+          <label class="form-label" for="f-genre">ジャンル</label>
+          <select id="f-genre" v-model="form.genre">
+            <option v-for="genre in genreOptions" :key="genre" :value="genre">{{ genre }}</option>
+          </select>
+          <label class="form-label" for="f-comment">コメント</label>
+          <textarea id="f-comment" v-model="form.comment" rows="3"></textarea>
+        </template>
+
+        <template v-else>
+          <label class="form-label" for="f-service">サービス名</label>
+          <input id="f-service" v-model="form.service" type="text" />
+          <label class="form-label" for="f-purpose">用途</label>
+          <input id="f-purpose" v-model="form.purpose" type="text" />
+          <label class="form-label">入力方法</label>
+          <div class="builder-tabs" role="tablist" aria-label="入力方法">
+            <button
+              type="button"
+              class="builder-tab"
+              :class="{ active: form.basis === 'yearly' }"
+              role="tab"
+              :aria-selected="form.basis === 'yearly'"
+              @click="form.basis = 'yearly'"
+            >
+              年額で入力
+            </button>
+            <button
+              type="button"
+              class="builder-tab"
+              :class="{ active: form.basis === 'monthly' }"
+              role="tab"
+              :aria-selected="form.basis === 'monthly'"
+              @click="form.basis = 'monthly'"
+            >
+              月額で入力
+            </button>
+          </div>
+          <label class="form-label" for="f-amount">{{ form.basis === 'monthly' ? '月額' : '年額' }}</label>
+          <input id="f-amount" v-model="form.amount" type="number" min="0" />
+          <label class="form-label" for="f-sub-url">URL</label>
+          <input id="f-sub-url" v-model="form.url" type="url" />
+        </template>
 
         <div class="composer-row">
           <span class="meta">{{ formStatus }}</span>
           <span class="row-actions">
+            <button v-if="editingRow !== null" class="theme-toggle" type="button" @click="removeFromForm">
+              削除する
+            </button>
             <button v-if="editingRow !== null" class="theme-toggle" type="button" @click="cancelEdit">
               編集をやめる
             </button>

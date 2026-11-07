@@ -125,7 +125,7 @@ const {
 } = useItems(API_URL)
 
 // ジャンルフィルタとURLパスを同期する（共有用URL）。
-// パスを持つジャンルは /list-of-stuff/<slug>、それ以外と未選択はベースに戻す。
+// パスを持つジャンルは /list-of-stuff-admin/<slug>、それ以外と未選択はベースに戻す。
 const base = import.meta.env.BASE_URL
 
 const syncUrl = () => {

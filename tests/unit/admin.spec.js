@@ -70,7 +70,11 @@ describe('admin utils', () => {
     )
     expect(view.url).toBe('https://example.com/app/#share=tok')
     expect(view.remaining).toBe('残り約30日')
-    expect(view.expires).toMatch(/^20261207 \d{2}:\d{2}$/)
+    const expiryDate = new Date('2026-12-07T00:00:00.000Z')
+    const pad = (n) => String(n).padStart(2, '0')
+    expect(view.expires).toBe(
+      `${expiryDate.getFullYear()}${pad(expiryDate.getMonth() + 1)}${pad(expiryDate.getDate())} ${pad(expiryDate.getHours())}:${pad(expiryDate.getMinutes())}`,
+    )
   })
 
   it('formFromItem copies fields and fills blanks', () => {

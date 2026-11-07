@@ -31,7 +31,12 @@ describe('share helpers', () => {
   })
 
   it('formats the expiry label and remaining time', () => {
-    expect(formatShareExpiry('2026-12-02T07:53:00+09:00')).toMatch(/^20261202 \d{2}:\d{2}$/)
+    // formatShareExpiry formats in local time, so build the expected
+    // label from the same Date instead of hardcoding a timezone's.
+    const expiryDate = new Date('2026-12-02T07:53:00+09:00')
+    const pad = (n) => String(n).padStart(2, '0')
+    const expected = `${expiryDate.getFullYear()}${pad(expiryDate.getMonth() + 1)}${pad(expiryDate.getDate())} ${pad(expiryDate.getHours())}:${pad(expiryDate.getMinutes())}`
+    expect(formatShareExpiry('2026-12-02T07:53:00+09:00')).toBe(expected)
     expect(formatShareExpiry('invalid')).toBe('')
     expect(formatShareRemaining(null)).toBe('')
     expect(formatShareRemaining(0)).toBe('期限切れ')

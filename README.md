@@ -4,12 +4,20 @@
 
 [Live Demo](https://freddiefujiwara.com/list-of-stuff-admin/)
 
-This is a simple website that shows a list of a minimalist's belongings.
+This is the private admin site for a minimalist's list of belongings.
+It manages the hand-edited item sheets (workman, variety, others) of
+the "List of stuff" spreadsheet; the public list itself is published
+as a blog article. The room sheet is rewritten by the Rakuten ROOM
+sync and is not editable here.
 
 ## Features
 
--   See a list of all items.
--   Filter items by genre.
+-   List, create, edit and delete items per sheet.
+-   Google sign-in restricted to the owner's account, plus temporary
+    access links (one month) issued by the owner, the same scheme as
+    the alarm, health and tweet admin sites.
+-   Writes go through the list-of-stuff-gas admin API (doPost), which
+    verifies the ID token or share token before touching the sheet.
 
 ## Tech Stack
 

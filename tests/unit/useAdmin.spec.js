@@ -1,0 +1,212 @@
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import { useAdmin } from '../../src/composables/useAdmin.js'
+
+const toBase64Url = (obj) =>
+  Buffer.from(JSON.stringify(obj))
+    .toString('base64')
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/, '')
+
+const credential = (payload) => `${toBase64Url({ alg: 'RS256' })}.${toBase64Url(payload)}.sig`
+
+const ITEMS = [
+  { row: 2, title: 'A', image: '', url: '', price: 100, unit: 1, genre: 'G', comment: '' },
+]
+
+const routeFetch = (handler) => {
+  const calls = []
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(async (url, opts) => {
+      const body = JSON.parse(opts.body)
+      calls.push(body)
+      return { json: async () => handler(body) }
+    }),
+  )
+  return calls
+}
+
+const okHandler = (body) => {
+  if (body.action === 'list_items') return { ok: true, sheet: body.sheet, items: ITEMS }
+  if (body.action === 'issue_share')
+    return { ok: true, share_token: 'tok', expires_at: '2026-12-07T00:00:00.000Z' }
+  if (body.action === 'revoke_share') return { ok: true, revoked: true }
+  return { ok: true, row: body.row || 4 }
+}
+
+afterEach(() => {
+  vi.unstubAllGlobals()
+})
+
+describe('useAdmin', () => {
+  it('stays on the gate without a share hash', async () => {
+    const admin = useAdmin()
+    expect(await admin.initFromHash('')).toBe(false)
+    expect(admin.phase.value).toBe('gate')
+  })
+
+  it('loads items after a Google credential', async () => {
+    const calls = routeFetch(okHandler)
+    const admin = useAdmin()
+    await admin.onCredential(credential({ email: 'owner@example.com' }))
+    expect(admin.phase.value).toBe('ready')
+    expect(admin.email.value).toBe('owner@example.com')
+    expect(admin.items.value).toEqual(ITEMS)
+    expect(admin.listStatus.value).toBe('1件')
+    expect(calls[0]).toMatchObject({ action: 'list_items', sheet: 'workman' })
+    expect(calls[0].idToken).toContain('.')
+  })
+
+  it('returns to the gate when the server rejects the account', async () => {
+    routeFetch(() => ({ ok: false, status: 403, error: 'forbidden email' }))
+    const admin = useAdmin()
+    await admin.onCredential(credential({ email: 'stranger@example.com' }))
+    expect(admin.phase.value).toBe('gate')
+    expect(admin.gateError.value).toBe('このアカウントでは利用できません')
+  })
+
+  it('tolerates an undecodable credential and still asks the server', async () => {
+    routeFetch(() => ({ ok: false, status: 401, error: 'token verification failed' }))
+    const admin = useAdmin()
+    await admin.onCredential('not-a-jwt')
+    expect(admin.email.value).toBe('')
+    expect(admin.phase.value).toBe('gate')
+  })
+
+  it('falls back to a generic message when a load error has no text', async () => {
+    routeFetch(() => ({ ok: false }))
+    const admin = useAdmin()
+    await admin.loadItems()
+    expect(admin.listStatus.value).toBe('読み込みに失敗しました')
+  })
+
+  it('leaves the email blank when the token payload has none', async () => {
+    routeFetch(okHandler)
+    const admin = useAdmin()
+    await admin.onCredential(credential({ sub: '123' }))
+    expect(admin.email.value).toBe('')
+    expect(admin.phase.value).toBe('ready')
+  })
+
+  it('reports a network failure while loading', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => { throw new Error('offline') }))
+    const admin = useAdmin()
+    const res = await admin.loadItems()
+    expect(res.ok).toBe(false)
+    expect(admin.listStatus.value).toBe('読み込みに失敗しました')
+  })
+
+  it('shows a server error while loading', async () => {
+    routeFetch(() => ({ ok: false, error: 'sheet is not editable: room' }))
+    const admin = useAdmin()
+    await admin.loadItems()
+    expect(admin.listStatus.value).toBe('sheet is not editable: room')
+  })
+
+  it('switches sheets and reloads', async () => {
+    const calls = routeFetch(okHandler)
+    const admin = useAdmin()
+    await admin.onCredential(credential({ email: 'owner@example.com' }))
+    await admin.selectSheet('variety')
+    expect(admin.currentSheet.value).toBe('variety')
+    expect(calls[calls.length - 1]).toMatchObject({ action: 'list_items', sheet: 'variety' })
+  })
+
+  it('creates, updates and deletes items, reloading after each success', async () => {
+    const calls = routeFetch(okHandler)
+    const admin = useAdmin()
+    await admin.onCredential(credential({ email: 'owner@example.com' }))
+    const before = calls.filter((c) => c.action === 'list_items').length
+
+    await admin.createItem({ title: 'N' })
+    expect(calls.find((c) => c.action === 'create_item')).toMatchObject({
+      sheet: 'workman',
+      item: { title: 'N' },
+    })
+    await admin.updateItem(2, { title: 'U' })
+    expect(calls.find((c) => c.action === 'update_item')).toMatchObject({ row: 2 })
+    await admin.deleteItem(2)
+    expect(calls.find((c) => c.action === 'delete_item')).toMatchObject({ row: 2 })
+    expect(calls.filter((c) => c.action === 'list_items').length).toBe(before + 3)
+  })
+
+  it('surfaces a failed update without reloading', async () => {
+    routeFetch((body) =>
+      body.action === 'list_items'
+        ? { ok: true, sheet: body.sheet, items: ITEMS }
+        : { ok: false, error: 'boom' },
+    )
+    const admin = useAdmin()
+    await admin.onCredential(credential({ email: 'owner@example.com' }))
+    const res = await admin.updateItem(2, { title: 'X' })
+    expect(res.ok).toBe(false)
+  })
+
+  it('surfaces a failed create without reloading', async () => {
+    routeFetch((body) =>
+      body.action === 'list_items'
+        ? { ok: true, sheet: body.sheet, items: ITEMS }
+        : { ok: false, error: 'boom' },
+    )
+    const admin = useAdmin()
+    await admin.onCredential(credential({ email: 'owner@example.com' }))
+    const res = await admin.createItem({ title: 'X' })
+    expect(res.ok).toBe(false)
+  })
+
+  it('does not reload after a failed mutation', async () => {
+    const calls = routeFetch((body) =>
+      body.action === 'list_items'
+        ? { ok: true, sheet: body.sheet, items: ITEMS }
+        : { ok: false, error: 'row out of range: 9' },
+    )
+    const admin = useAdmin()
+    await admin.onCredential(credential({ email: 'owner@example.com' }))
+    const res = await admin.deleteItem(9)
+    expect(res.ok).toBe(false)
+    expect(calls.filter((c) => c.action === 'list_items')).toHaveLength(1)
+  })
+
+  it('authenticates with a share token from the hash', async () => {
+    const calls = routeFetch((body) => ({
+      ok: true,
+      sheet: body.sheet,
+      items: ITEMS,
+      _share: { expires_at: '2026-12-07T00:00:00.000Z' },
+    }))
+    const admin = useAdmin()
+    expect(await admin.initFromHash('#share=tok123')).toBe(true)
+    expect(admin.isShareSession.value).toBe(true)
+    expect(admin.phase.value).toBe('ready')
+    expect(admin.shareExpiresAt.value).toBe('2026-12-07T00:00:00.000Z')
+    expect(calls[0]).toMatchObject({ share_token: 'tok123' })
+  })
+
+  it('moves to the expired state when the share session is rejected', async () => {
+    routeFetch(() => ({ ok: false, status: 401, error: 'share session expired or invalid' }))
+    const admin = useAdmin()
+    await admin.initFromHash('#share=dead')
+    expect(admin.phase.value).toBe('share-expired')
+  })
+
+  it('issues and revokes share links with the owner token', async () => {
+    const calls = routeFetch(okHandler)
+    const admin = useAdmin()
+    await admin.onCredential(credential({ email: 'owner@example.com' }))
+    const issued = await admin.issueShare()
+    expect(issued.share_token).toBe('tok')
+    expect(calls.find((c) => c.action === 'issue_share').idToken).toContain('.')
+    const revoked = await admin.revokeShare()
+    expect(revoked.revoked).toBe(true)
+  })
+
+  it('logs out back to the gate', async () => {
+    routeFetch(okHandler)
+    const admin = useAdmin()
+    await admin.onCredential(credential({ email: 'owner@example.com' }))
+    admin.logout()
+    expect(admin.phase.value).toBe('gate')
+    expect(admin.email.value).toBe('')
+  })
+})
